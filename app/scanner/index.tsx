@@ -10,12 +10,12 @@ import {
   PanResponder,
   Dimensions,
   Animated,
+  Pressable,
 } from "react-native";
 import { CameraView } from "expo-camera";
 import { Stack, useNavigation, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable } from "react-native-gesture-handler";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const MIN_MODAL_HEIGHT = 200;
@@ -78,6 +78,10 @@ export default function Home() {
     }
   };
 
+  const handleDeleteItem = (itemToDelete: string) => {
+    setScannedData((prev) => prev.filter((item) => item !== itemToDelete));
+  };
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -132,9 +136,15 @@ export default function Home() {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           {scannedData.length > 0 ? (
             scannedData.map((item, index) => (
-              <Text key={index} style={styles.dataText}>
-                * {item}
-              </Text>
+              <View key={index} style={styles.itemContainer}>
+                <View style={styles.itemContent}>
+                  <Ionicons name="checkmark-circle" size={24} color="green" />
+                  <Text style={styles.dataText}>{item}</Text>
+                </View>
+                <Pressable onPress={() => handleDeleteItem(item)}>
+                  <Ionicons name="close-outline" size={24} color="black" />
+                </Pressable>
+              </View>
             ))
           ) : (
             <Text style={styles.dataText}>
@@ -183,5 +193,18 @@ const styles = StyleSheet.create({
   dataText: {
     fontSize: 16,
     marginBottom: 4,
+    marginLeft: 5,
+  },
+  itemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomColor: "#ccc",
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+  },
+  itemContent: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
