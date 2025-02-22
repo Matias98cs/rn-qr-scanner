@@ -16,6 +16,7 @@ import { CameraView } from "expo-camera";
 import { Stack, useNavigation, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const MIN_MODAL_HEIGHT = 200;
@@ -53,7 +54,7 @@ export default function Home() {
         </Pressable>
       ),
     });
-  }, [navigation, router]);
+  }, []);
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
@@ -71,6 +72,7 @@ export default function Home() {
   const handleBarcodeScanned = ({ data }: { data: string }) => {
     if (data && !qrLock.current && !scannedData.includes(data)) {
       qrLock.current = true;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setScannedData((prev) => [...prev, data]);
       setTimeout(() => {
         qrLock.current = false;
@@ -79,6 +81,7 @@ export default function Home() {
   };
 
   const handleDeleteItem = (itemToDelete: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setScannedData((prev) => prev.filter((item) => item !== itemToDelete));
   };
 
@@ -147,10 +150,24 @@ export default function Home() {
               </View>
             ))
           ) : (
-            <Text style={styles.dataText}>
-              Escanea un código para mostrar la data
-            </Text>
+            <Text style={styles.dataText}>Escanea un código</Text>
           )}
+
+          {
+            scannedData.length > 0 && (
+              <Pressable
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? "#252525" : "black",
+                  padding: 10,
+                  borderRadius: 10,
+                  marginTop: 20,
+                })}
+                onPress={() => console.log("Enviando...")}
+              >
+                <Text style={styles.btnText}>Enviar</Text>
+              </Pressable>
+            )
+          }
         </ScrollView>
       </Animated.View>
     </SafeAreaView>
@@ -194,6 +211,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 4,
     marginLeft: 5,
+    paddingTop: 10,
+    textAlign: "center",
   },
   itemContainer: {
     flexDirection: "row",
@@ -206,5 +225,9 @@ const styles = StyleSheet.create({
   itemContent: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  btnText: {
+    color: "white",
+    textAlign: "center",
   },
 });
