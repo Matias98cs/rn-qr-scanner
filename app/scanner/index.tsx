@@ -41,7 +41,6 @@ export default function Home() {
       headerLeft: () => (
         <Pressable
           onPress={() => {
-            console.log("Volver atrás");
             router.back();
           }}
         >

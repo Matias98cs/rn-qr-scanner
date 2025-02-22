@@ -1,10 +1,17 @@
-import { View, Text, StyleSheet, SafeAreaView, Pressable, useWindowDimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
 import { Link, Stack } from "expo-router";
 import { useCameraPermissions } from "expo-camera";
 
 export default function Home() {
   const [permission, requestPermission] = useCameraPermissions();
-  const {height} = useWindowDimensions()
+  const { height } = useWindowDimensions();
   const isPermissionGranted = Boolean(permission?.granted);
 
   return (
@@ -12,7 +19,7 @@ export default function Home() {
       style={{
         paddingTop: height * 0.1,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
       }}
     >
       <Stack.Screen
