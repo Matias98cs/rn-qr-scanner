@@ -7,16 +7,54 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
+  PanResponder,
+  Dimensions,
+  Animated,
 } from "react-native";
 import { CameraView } from "expo-camera";
-import { Stack } from "expo-router";
+import { Stack, useNavigation, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import Overlay from "./Overlay";
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable } from "react-native-gesture-handler";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const MIN_MODAL_HEIGHT = 200;
+const MAX_MODAL_HEIGHT = SCREEN_HEIGHT - 100;
 
 export default function Home() {
+  const router = useRouter();
+  const navigation = useNavigation();
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
   const [scannedData, setScannedData] = useState<string[]>([]);
+
+  const modalHeight = useRef(new Animated.Value(MIN_MODAL_HEIGHT)).current;
+  const dragStartHeight = useRef(MIN_MODAL_HEIGHT);
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Lector QR",
+      headerShadowVisible: false,
+      headerStyle: {
+        backgroundColor: "black",
+      },
+      headerLeft: () => (
+        <Pressable
+          onPress={() => {
+            console.log("Volver atrás");
+            router.back();
+          }}
+        >
+          <Ionicons
+            name="arrow-back-outline"
+            color="white"
+            size={24}
+            style={{ marginRight: 10 }}
+          />
+        </Pressable>
+      ),
+    });
+  }, [navigation, router]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
@@ -41,35 +79,71 @@ export default function Home() {
     }
   };
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        modalHeight.stopAnimation((value: number) => {
+          dragStartHeight.current = value;
+        });
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        let newHeight = dragStartHeight.current - gestureState.dy;
+        newHeight = Math.max(
+          MIN_MODAL_HEIGHT,
+          Math.min(newHeight, MAX_MODAL_HEIGHT),
+        );
+        modalHeight.setValue(newHeight);
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        let finalHeight = dragStartHeight.current - gestureState.dy;
+        if (finalHeight < MIN_MODAL_HEIGHT + 50) {
+          finalHeight = MIN_MODAL_HEIGHT;
+        } else if (finalHeight > MAX_MODAL_HEIGHT - 50) {
+          finalHeight = MAX_MODAL_HEIGHT;
+        }
+        Animated.timing(modalHeight, {
+          toValue: finalHeight,
+          duration: 200,
+          useNativeDriver: false,
+        }).start(() => {
+          dragStartHeight.current = finalHeight;
+        });
+      },
+    }),
+  ).current;
+
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ title: "Overview", headerShown: false }} />
-      {Platform.OS === "android" && <StatusBar hidden />}
-
       <View style={styles.cameraContainer}>
         <CameraView
           style={StyleSheet.absoluteFillObject}
           facing="back"
           onBarcodeScanned={handleBarcodeScanned}
         />
-        <Overlay />
-        {/* Contenedor de datos más grande */}
-        <View style={styles.dataContainer}>
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            {scannedData.length > 0 ? (
-              scannedData.map((item, index) => (
-                <Text key={index} style={styles.dataText}>
-                  * {item}
-                </Text>
-              ))
-            ) : (
-              <Text style={styles.dataText}>
-                Escanea un código para mostrar la data
-              </Text>
-            )}
-          </ScrollView>
-        </View>
       </View>
+
+      <Animated.View
+        style={[styles.bottomSheet, { height: modalHeight }]}
+        {...panResponder.panHandlers}
+      >
+        <View style={styles.handleContainer}>
+          <View style={styles.handle} />
+        </View>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          {scannedData.length > 0 ? (
+            scannedData.map((item, index) => (
+              <Text key={index} style={styles.dataText}>
+                * {item}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.dataText}>
+              Escanea un código para mostrar la data
+            </Text>
+          )}
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -82,19 +156,30 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
-  dataContainer: {
+  bottomSheet: {
     position: "absolute",
-    bottom: 25,
-    left: 20,
-    right: 20,
-    height: 200,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    borderRadius: 10,
-    padding: 16,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 8,
     overflow: "hidden",
   },
+  handleContainer: {
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  handle: {
+    width: 40,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: "#ccc",
+  },
   scrollViewContent: {
-    padding: 8,
+    paddingBottom: 20,
   },
   dataText: {
     fontSize: 16,
