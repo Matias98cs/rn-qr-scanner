@@ -60,12 +60,12 @@ const TabBarButton: React.FC<TabBarButtonProps> = ({
       style={[styles.tabbarItem, style]}
     >
       <Animated.View style={[animatedIconStyle, styles.iconContainer]}>
-        {icon[routeName]({ color: isFocused ? "#FFF" : "#222", size: 24 })}
+        {icon[routeName]({ color: isFocused ? "#FFF" : "#252525", size: 24 })}
       </Animated.View>
       <Animated.Text
         style={[
           styles.label,
-          { color: isFocused ? "#673ab7" : "#222" },
+          { color: isFocused ? "#673ab7" : "#252525" },
           animatedTextStyle,
         ]}
       >
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    marginTop: 4,
+    // marginTop: 4,
   },
 });
 

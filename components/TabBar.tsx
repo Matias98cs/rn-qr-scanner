@@ -69,7 +69,8 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
           animatedStyle,
           {
             position: "absolute",
-            backgroundColor: "#732FEB",
+            // backgroundColor: "#732FEB",
+            backgroundColor: "#252525",
             borderRadius: 30,
             marginHorizontal: 12,
             height: dimensions.height - 15,
