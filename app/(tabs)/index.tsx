@@ -100,10 +100,11 @@ const styles = StyleSheet.create({
   },
   qrButtonContainer: {
     position: "absolute",
-    bottom: 30,
+    bottom: 150,
     alignSelf: "center",
     padding: 10,
     borderRadius: 10,
+    zIndex: 999,
   },
   qrButton: {
     backgroundColor: "black",
