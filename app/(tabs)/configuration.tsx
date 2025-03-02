@@ -10,11 +10,13 @@ import {
 import React, { useState } from "react";
 import { Stack } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useCameraPermissions } from "expo-camera";
 
 const isAndroid = Platform.OS === "android";
 
 const Configuration = () => {
-  const [cameraPermision, setCameraPermision] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const isPermissionGranted = Boolean(permission?.granted);
   const colorScheme = useColorScheme();
 
   return (
@@ -38,9 +40,7 @@ const Configuration = () => {
         <Text style={[styles.title, { color: useThemeColor({}, "text") }]}>
           Esta es la pantalla de configuraciones
         </Text>
-        <View
-          style={[styles.permissionCard, { backgroundColor: "transparent" }]}
-        >
+        <View style={styles.permissionCard}>
           <Text
             style={[
               styles.permissionText,
@@ -50,12 +50,14 @@ const Configuration = () => {
             Permiso de cámara
           </Text>
           <Switch
-            value={cameraPermision}
-            onValueChange={() => setCameraPermision(!cameraPermision)}
+            value={isPermissionGranted}
+            onValueChange={async () => {
+              await requestPermission();
+            }}
             thumbColor={isAndroid ? "white" : "white"}
             trackColor={{
-              false: colorScheme === "dark" ? "grey" : "lightgrey",
-              true: "white",
+              false: colorScheme === "dark" ? "grey" : "grey",
+              true: colorScheme === "dark" ? "white" : "#252525",
             }}
           />
         </View>
