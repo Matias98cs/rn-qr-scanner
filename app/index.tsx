@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Pressable,
+  useColorScheme,
+} from "react-native";
 import { Link, Stack } from "expo-router";
 import { useCameraPermissions } from "expo-camera";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -8,9 +15,10 @@ import * as Haptics from "expo-haptics";
 export default function Home() {
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
+  const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
-
-  console.log(isPermissionGranted);
+  const backgroundColor = useThemeColor({}, "background");
+  const iconColor = useThemeColor({}, "icon");
 
   const handlePress = () => {
     if (isPermissionGranted) {
@@ -39,7 +47,25 @@ export default function Home() {
         </Pressable>
       </View>
 
-      <Link href={"/scanner"} asChild style={styles.qrButtonContainer}>
+      <Link
+        href={"/scanner"}
+        asChild
+        style={[
+          styles.qrButtonContainer,
+          {
+            backgroundColor: colorScheme === "dark" ? "white" : "#252525",
+            shadowColor: textColor,
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 5,
+            zIndex: 5,
+          },
+        ]}
+      >
         <Pressable
           disabled={!isPermissionGranted}
           onPress={handlePress}
@@ -51,11 +77,7 @@ export default function Home() {
             },
           ]}
         >
-          <Ionicons
-            name="qr-code-outline"
-            size={50}
-            color={isPermissionGranted ? "white" : "gray"}
-          />
+          <Ionicons name="qr-code-outline" size={35} color={iconColor} />
         </Pressable>
       </Link>
     </SafeAreaView>
@@ -80,7 +102,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 30,
     alignSelf: "center",
-    backgroundColor: "#252525",
     padding: 10,
     borderRadius: 10,
   },
