@@ -7,16 +7,17 @@ import {
   Platform,
   useColorScheme,
 } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import { Stack } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { useCameraPermissions } from "expo-camera";
+import { PermissionsStatus } from "@/infrastructure/interfaces/camera";
+import { usePermissionnsStore } from "@/presentations/store/usePermissions";
 
 const isAndroid = Platform.OS === "android";
 
 const Configuration = () => {
-  const [permission, requestPermission] = useCameraPermissions();
-  const isPermissionGranted = Boolean(permission?.granted);
+  const { cameraStatus, requestCameraPermissions } = usePermissionnsStore();
+  const isPermissionGranted = cameraStatus === PermissionsStatus.GRANTED;
   const colorScheme = useColorScheme();
 
   return (
@@ -52,11 +53,15 @@ const Configuration = () => {
           <Switch
             value={isPermissionGranted}
             onValueChange={async () => {
-              await requestPermission();
+              try {
+                await requestCameraPermissions();
+              } catch (error) {
+                console.error("Error al solicitar permisos de cámara:", error);
+              }
             }}
             thumbColor={isAndroid ? "white" : "white"}
             trackColor={{
-              false: colorScheme === "dark" ? "grey" : "grey",
+              false: colorScheme === "dark" ? "grey" : "lightgrey",
               true: colorScheme === "dark" ? "white" : "#252525",
             }}
           />
@@ -86,7 +91,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderColor: "#252525",
-    borderWidth: 0.6,
+    borderWidth: 1,
     padding: 12,
     borderRadius: 10,
   },
