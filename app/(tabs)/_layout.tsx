@@ -7,14 +7,13 @@ const TabLayout = () => {
     <Tabs tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen
         name="index"
-        options={{ title: "Inicio", headerShown: false, animation: "none" }}
+        options={{ title: "Inicio", headerShown: false }}
       />
       <Tabs.Screen
         name="configuration"
         options={{
           title: "Configuraciones",
           headerShown: false,
-          animation: "none",
         }}
       />
     </Tabs>

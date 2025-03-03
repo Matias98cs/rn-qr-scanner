@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, SafeAreaView, StyleSheet, Pressable, Alert } from "react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,6 +12,7 @@ import { useSession } from "@/hooks/useSession";
 import { useQrLock } from "@/hooks/useQrLock";
 import { useScannedData } from "@/hooks/useScannedData";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Scanner() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function Scanner() {
   const { lock, unlock, isLocked } = useQrLock();
   const { scannedData, addData, deleteData } = useScannedData();
   const scannedDataRef = useRef(scannedData);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -69,6 +71,7 @@ export default function Scanner() {
   };
 
   const handleSend = async () => {
+    setLoading(true);
     if (!sessionId) {
       Alert.alert("Error", "No hay sesión activa.");
       return;
@@ -81,15 +84,22 @@ export default function Scanner() {
       for (const data of scannedData) {
         await saveQrCode(database, sessionId, data, null);
       }
-      Alert.alert("Códigos guardados", "Se han guardado correctamente.");
-      router.replace("/(tabs)");
+      Alert.alert(
+        "Códigos guardados",
+        "Se han guardado correctamente.",
+        [{ text: "OK", onPress: () => router.replace("/(tabs)") }],
+        { cancelable: false }
+      );
     } catch (error) {
       Alert.alert("Error", "Hubo un problema al guardar los códigos.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {loading && <LoadingScreen />}
       <View style={styles.cameraContainer}>
         <CameraScanner onBarcodeScanned={handleBarcodeScanned} />
       </View>
