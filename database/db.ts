@@ -3,9 +3,9 @@ import { SQLiteDatabase } from "expo-sqlite";
 export const DATABASE_NAME = "qr_scanner.db";
 
 export const createDbIfNeeded = async (db: SQLiteDatabase) => {
-    // await db.execAsync("DROP TABLE IF EXISTS qr_codes;");
-    // await db.execAsync("DROP TABLE IF EXISTS sessions;");
-    await db.execAsync(`
+  // await db.execAsync("DROP TABLE IF EXISTS qr_codes;");
+  // await db.execAsync("DROP TABLE IF EXISTS sessions;");
+  await db.execAsync(`
         CREATE TABLE IF NOT EXISTS sessions (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
@@ -13,7 +13,7 @@ export const createDbIfNeeded = async (db: SQLiteDatabase) => {
         );
       `);
 
-    await db.execAsync(`
+  await db.execAsync(`
         CREATE TABLE IF NOT EXISTS qr_codes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           session_id TEXT NOT NULL,
@@ -24,6 +24,6 @@ export const createDbIfNeeded = async (db: SQLiteDatabase) => {
         );
       `);
 
-    console.log("Tablas 'sessions' y 'qr_codes' creadas o ya existentes.");
+  // console.log("Tablas 'sessions' y 'qr_codes' creadas o ya existentes.");
 
 };

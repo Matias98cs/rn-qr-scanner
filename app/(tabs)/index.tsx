@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -25,6 +25,7 @@ import { QrCode } from "@/infrastructure/interfaces/qr";
 import { Session } from "@/infrastructure/interfaces/sessions";
 import { getQrCodesBySession } from "@/database/qrRepository";
 import { useSQLiteContext } from "expo-sqlite";
+import LoadingScreen from "@/components/LoadingScreen";
 
 type TabsNavigationProp = BottomTabNavigationProp<{
   index: undefined;
@@ -33,14 +34,26 @@ type TabsNavigationProp = BottomTabNavigationProp<{
 
 export default function Home() {
   const database = useSQLiteContext();
-
-  const { sessions, qrCodes } = useSessions();
+  const [loading, setLoading] = useState<boolean>(false);
+  const { sessions, qrCodes, loading: loadingSession, error } = useSessions();
   const { cameraStatus } = usePermissionnsStore();
   const isPermissionGranted = cameraStatus === "GRANTED";
   const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
 
   const navigation = useNavigation<TabsNavigationProp>();
+
+  if (loadingSession) {
+    return <LoadingScreen />;
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Error: {error}</Text>
+      </SafeAreaView>
+    );
+  }
 
   const handlePress = async () => {
     if (isPermissionGranted) {
@@ -66,6 +79,7 @@ export default function Home() {
   };
 
   const handleShare = async (ses: Session) => {
+    setLoading(true);
     try {
       const response = await getQrCodesBySession(database, ses.id);
       const formattedResponse = response
@@ -76,6 +90,8 @@ export default function Home() {
       await Share.share({ message: formattedResponse });
     } catch (error) {
       console.error("Error compartiendo:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,6 +101,7 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {loading && <LoadingScreen />}
       <FlatList
         style={styles.list}
         data={sessions}
