@@ -29,11 +29,11 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        modalHeight.stopAnimation((value: number) => {
-          dragStartHeight.current = value;
-        });
+      onStartShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dy) > 5;
+      },
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dy) > 5;
       },
       onPanResponderMove: (evt, gestureState) => {
         let newHeight = dragStartHeight.current - gestureState.dy;
@@ -43,13 +43,13 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         );
         modalHeight.setValue(newHeight);
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: (_, gestureState) => {
         let finalHeight = dragStartHeight.current - gestureState.dy;
-        if (finalHeight < MIN_MODAL_HEIGHT + 50) {
-          finalHeight = MIN_MODAL_HEIGHT;
-        } else if (finalHeight > MAX_MODAL_HEIGHT - 50) {
-          finalHeight = MAX_MODAL_HEIGHT;
-        }
+        finalHeight =
+          finalHeight < MIN_MODAL_HEIGHT + 50 ? MIN_MODAL_HEIGHT : finalHeight;
+        finalHeight =
+          finalHeight > MAX_MODAL_HEIGHT - 50 ? MAX_MODAL_HEIGHT : finalHeight;
+
         Animated.timing(modalHeight, {
           toValue: finalHeight,
           duration: 200,
@@ -62,11 +62,19 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   ).current;
 
   return (
-    <Animated.View style={[styles.bottomSheet, { height: modalHeight }]} {...panResponder.panHandlers}>
+    <Animated.View
+      pointerEvents="auto"
+      style={[styles.bottomSheet, { height: modalHeight }]}
+      {...panResponder.panHandlers}
+    >
       <View style={styles.handleContainer}>
         <View style={styles.handle} />
       </View>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+      >
         {scannedData.length > 0 ? (
           scannedData.map((item, index) => (
             <ScannedItem key={index} data={item} onDelete={onDeleteItem} />
@@ -77,13 +85,13 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {scannedData.length > 0 && (
           <Pressable
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? "#252525" : "black",
-              padding: 10,
-              borderRadius: 10,
-              marginTop: 20,
-            })}
-            onPress={onSend}
+            hitSlop={10}
+            style={({ pressed }) => [
+              styles.sendButton,
+              { backgroundColor: pressed ? "#252525" : "black" },
+            ]}
+            // onPress={() => console.log("Hola")} // ✅ Ya debería responder bien
+            onPressOut={onSend}
           >
             <Text style={styles.btnText}>Enviar</Text>
           </Pressable>
@@ -124,9 +132,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 10,
   },
+  sendButton: {
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
   btnText: {
     color: "white",
     textAlign: "center",
+    fontWeight: "bold",
   },
 });
 

@@ -1,20 +1,31 @@
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   SafeAreaView,
-  Pressable,
-  useColorScheme,
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
   Alert,
+  useColorScheme,
 } from "react-native";
-import { router, Stack } from "expo-router";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { Ionicons } from "@expo/vector-icons";
+import { router, useNavigation } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { PermissionsStatus } from "@/infrastructure/interfaces/camera";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { usePermissionnsStore } from "@/presentations/store/usePermissions";
-import { useNavigation } from "expo-router";
-import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import * as Sharing from "expo-sharing";
+import { Asset } from "expo-asset";
+import * as FileSystem from "expo-file-system";
+import { Share } from "react-native";
+
+import { useSessions } from "@/hooks/useSessions";
+import { SessionCard } from "@/components/SessionCard";
+import { QRButton } from "@/components/QRButton";
+import { QrCode } from "@/infrastructure/interfaces/qr";
+import { Session } from "@/infrastructure/interfaces/sessions";
+import { getQrCodesBySession } from "@/database/qrRepository";
+import { useSQLiteContext } from "expo-sqlite";
+import LoadingScreen from "@/components/LoadingScreen";
 
 type TabsNavigationProp = BottomTabNavigationProp<{
   index: undefined;
@@ -22,19 +33,27 @@ type TabsNavigationProp = BottomTabNavigationProp<{
 }>;
 
 export default function Home() {
+  const database = useSQLiteContext();
+  const [loading, setLoading] = useState<boolean>(false);
+  const { sessions, qrCodes, loading: loadingSession, error } = useSessions();
   const { cameraStatus } = usePermissionnsStore();
-  const isPermissionGranted = cameraStatus === PermissionsStatus.GRANTED;
+  const isPermissionGranted = cameraStatus === "GRANTED";
   const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
-  const iconColor = useThemeColor({}, "icon");
-
-  const colorIcon = isPermissionGranted
-    ? iconColor
-    : colorScheme === "dark"
-    ? "rgba(255, 255, 255, 0.6)"
-    : "rgba(0, 0, 0, 0.5)";
 
   const navigation = useNavigation<TabsNavigationProp>();
+
+  if (loadingSession) {
+    return <LoadingScreen />;
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Error: {error}</Text>
+      </SafeAreaView>
+    );
+  }
 
   const handlePress = async () => {
     if (isPermissionGranted) {
@@ -59,28 +78,58 @@ export default function Home() {
     }
   };
 
+  const handleShare = async (ses: Session) => {
+    setLoading(true);
+    try {
+      const response = await getQrCodesBySession(database, ses.id);
+      const formattedResponse = response
+        .map((qr: QrCode) => `Nombre: ${qr.text}\nURL: ${qr.url ? qr.url : ""}`)
+        .join("\n\n");
+
+      console.log(formattedResponse);
+      await Share.share({ message: formattedResponse });
+    } catch (error) {
+      console.error("Error compartiendo:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSeeMore = () => {
+    console.log("Ver más");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
-
-      <Pressable
+      {loading && <LoadingScreen />}
+      <FlatList
+        style={styles.list}
+        data={sessions}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={
+          <Text style={[styles.noDataText, { color: textColor }]}>
+            No tienes códigos QR escaneados aún.
+          </Text>
+        }
+        ListHeaderComponent={
+          <View style={styles.headerContainer}>
+            <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
+          </View>
+        }
+        ListFooterComponent={<View style={styles.footerSpace} />}
+        renderItem={({ item }) => (
+          <SessionCard
+            session={item}
+            qrCodes={qrCodes[item.id] || []}
+            handleShare={handleShare}
+            handleSeeMore={handleSeeMore}
+          />
+        )}
+      />
+      <QRButton
         onPress={handlePress}
-        style={({ pressed }) => [
-          styles.qrButtonContainer,
-          {
-            backgroundColor: colorScheme === "dark" ? "white" : "#252525",
-            shadowColor: textColor,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 5,
-            zIndex: 5,
-            opacity: !isPermissionGranted ? 0.5 : 1,
-          },
-        ]}
-      >
-        <Ionicons name="qr-code-outline" size={35} color={colorIcon} />
-      </Pressable>
+        isPermissionGranted={isPermissionGranted}
+      />
     </SafeAreaView>
   );
 }
@@ -88,24 +137,27 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 50,
+  },
+  list: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  headerContainer: {
     alignItems: "center",
-    paddingVertical: 80,
+    paddingBottom: 10,
   },
   title: {
-    fontSize: 40,
-  },
-  buttonStyle: {
-    color: "#0E7AFE",
-    fontSize: 20,
+    fontSize: 30,
+    fontWeight: "bold",
     textAlign: "center",
   },
-  qrButtonContainer: {
-    position: "absolute",
-    bottom: 150,
-    alignSelf: "center",
-    padding: 15,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
+  noDataText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  footerSpace: {
+    height: 100,
   },
 });

@@ -16,10 +16,14 @@ const ScannedItem: React.FC<ScannedItemProps> = ({ data, onDelete }) => {
         <Text style={styles.dataText}>{data}</Text>
       </View>
       <Pressable
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          onDelete(data);
-        }}
+      onPressOut={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onDelete(data);
+      }}
+        // onPress={() => {
+        //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        //   onDelete(data);
+        // }}
       >
         <Ionicons name="close-outline" size={24} color="black" />
       </Pressable>
