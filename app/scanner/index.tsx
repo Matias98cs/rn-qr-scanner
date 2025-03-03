@@ -1,36 +1,31 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  View,
-  SafeAreaView,
-  StyleSheet,
-  AppState,
-  Pressable,
-  Alert,
-} from "react-native";
+import React, { useEffect } from "react";
+import { View, SafeAreaView, StyleSheet, Pressable, Alert } from "react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import CameraScanner from "@/components/CameraScanner";
 import { useSQLiteContext } from "expo-sqlite";
-import { createSession, saveQrCode } from "@/database/qrRepository";
+import { saveQrCode } from "@/database/qrRepository";
 import BottomSheet from "@/components/ButtomSheet";
+
+// Hooks personalizados
+import { useSession } from "@/hooks/useSession";
+import { useQrLock } from "@/hooks/useQrLock";
+import { useScannedData } from "@/hooks/useScannedData";
 
 export default function Scanner() {
   const router = useRouter();
   const navigation = useNavigation();
   const database = useSQLiteContext();
-  const qrLock = useRef(false);
-  const appState = useRef(AppState.currentState);
-  const [scannedData, setScannedData] = useState<string[]>([]);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const sessionId = useSession();
+  const { lock, unlock, isLocked } = useQrLock();
+  const { scannedData, addData, deleteData } = useScannedData();
 
   useEffect(() => {
     navigation.setOptions({
       title: "Lector QR",
       headerShadowVisible: false,
-      headerStyle: {
-        backgroundColor: "black",
-      },
+      headerStyle: { backgroundColor: "black" },
       headerLeft: () => (
         <Pressable onPress={() => router.back()}>
           <Ionicons
@@ -42,50 +37,17 @@ export default function Scanner() {
         </Pressable>
       ),
     });
-  }, []);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === "active"
-      ) {
-        qrLock.current = false;
-      }
-      appState.current = nextAppState;
-    });
-    return () => subscription.remove();
-  }, []);
-
-  useEffect(() => {
-    const startNewSession = async () => {
-      try {
-        const newSessionId = await createSession(
-          database,
-          `Escaneo ${new Date().toLocaleString()}`
-        );
-        setSessionId(newSessionId);
-      } catch (error) {
-        console.error("Error al crear sesión:", error);
-      }
-    };
-    startNewSession();
-  }, []);
+  }, [navigation, router]);
 
   const handleBarcodeScanned = (data: string) => {
-    if (data && !qrLock.current && !scannedData.includes(data)) {
-      qrLock.current = true;
+    if (data && !isLocked() && !scannedData.includes(data)) {
+      lock();
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setScannedData((prev) => [...prev, data]);
-
+      addData(data);
       setTimeout(() => {
-        qrLock.current = false;
+        unlock();
       }, 500);
     }
-  };
-
-  const handleDeleteItem = (itemToDelete: string) => {
-    setScannedData((prev) => prev.filter((item) => item !== itemToDelete));
   };
 
   const handleSend = async () => {
@@ -93,12 +55,10 @@ export default function Scanner() {
       Alert.alert("Error", "No hay sesión activa.");
       return;
     }
-
     if (scannedData.length === 0) {
       Alert.alert("No hay datos", "No has escaneado ningún código.");
       return;
     }
-
     try {
       for (const data of scannedData) {
         await saveQrCode(database, sessionId, data, null);
@@ -117,7 +77,7 @@ export default function Scanner() {
       </View>
       <BottomSheet
         scannedData={scannedData}
-        onDeleteItem={handleDeleteItem}
+        onDeleteItem={deleteData}
         onSend={handleSend}
       />
     </SafeAreaView>
@@ -125,11 +85,6 @@ export default function Scanner() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  cameraContainer: {
-    flex: 1,
-    position: "relative",
-  },
+  container: { flex: 1 },
+  cameraContainer: { flex: 1, position: "relative" },
 });
