@@ -94,28 +94,11 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
-
-      <Pressable
-        onPress={handlePress}
-        style={({ pressed }) => [
-          styles.qrButtonContainer,
-          {
-            backgroundColor: colorScheme === "dark" ? "white" : "#252525",
-            shadowColor: textColor,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 5,
-            zIndex: 5,
-            opacity: !isPermissionGranted ? 0.5 : 1,
-          },
-        ]}
-      >
-        <Ionicons name="qr-code-outline" size={35} color={colorIcon} />
-      </Pressable>
-
+      {/* <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text> */}
       <FlatList
+        style={{
+          width: "100%",
+        }}
         data={sessions}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
@@ -123,6 +106,10 @@ export default function Home() {
             No tienes códigos QR escaneados aún.
           </Text>
         }
+        ListHeaderComponent={
+          <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
+        }
+        scrollEnabled={true}
         renderItem={({ item }) => (
           <View style={styles.sessionCard}>
             <Text style={[styles.sessionTitle, { color: textColor }]}>
@@ -149,6 +136,25 @@ export default function Home() {
           </View>
         )}
       />
+
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [
+          styles.qrButtonContainer,
+          {
+            backgroundColor: colorScheme === "dark" ? "white" : "#252525",
+            shadowColor: textColor,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 5,
+            zIndex: 5,
+            opacity: !isPermissionGranted ? 0.5 : 1,
+          },
+        ]}
+      >
+        <Ionicons name="qr-code-outline" size={35} color={colorIcon} />
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -157,13 +163,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 80,
+    paddingTop: 80,
     paddingHorizontal: 16,
   },
   title: {
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   noDataText: {
     fontSize: 16,

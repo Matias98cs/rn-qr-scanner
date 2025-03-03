@@ -3,6 +3,8 @@ import { SQLiteDatabase } from "expo-sqlite";
 export const DATABASE_NAME = "qr_scanner.db";
 
 export const createDbIfNeeded = async (db: SQLiteDatabase) => {
+    // await db.execAsync("DROP TABLE IF EXISTS qr_codes;");
+    // await db.execAsync("DROP TABLE IF EXISTS sessions;");
     await db.execAsync(`
         CREATE TABLE IF NOT EXISTS sessions (
           id TEXT PRIMARY KEY,

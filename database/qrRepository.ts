@@ -1,11 +1,11 @@
 import { QrCode } from "@/infrastructure/interfaces/qr";
 import { SQLiteDatabase } from "expo-sqlite";
-import { v4 as uuidv4 } from "uuid";
+import uuid from "react-native-uuid";
+
 
 // ✅ Crear una nueva sesión
 export const createSession = async (database: SQLiteDatabase, name: string) => {
-    const sessionId = uuidv4(); // Generar un UUID único para la sesión
-
+    const sessionId = uuid.v4() as string; // ✅ Asegurar que el UUID es un string
     try {
         await database.runAsync(
             "INSERT INTO sessions (id, name) VALUES (?, ?);",
