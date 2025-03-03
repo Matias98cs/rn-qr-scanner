@@ -14,8 +14,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 interface SessionCardProps {
   session: Session;
   qrCodes: QrCode[];
-  handleShare: () => void;
-  handleSeeMore: () => void;
+  handleShare: (session: Session) => void;
+  handleSeeMore: (session: Session) => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -73,10 +73,16 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       )}
 
       <View style={styles.buttonsContainer}>
-        <Pressable style={styles.iconButton} onPress={() => handleShare()}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => handleShare(session)}
+        >
           <Ionicons name="share-outline" size={24} color={textColor} />
         </Pressable>
-        <Pressable style={styles.iconButton} onPress={() => handleSeeMore()}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => handleSeeMore(session)}
+        >
           <Ionicons
             name="ellipsis-horizontal-outline"
             size={24}

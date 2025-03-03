@@ -13,10 +13,18 @@ import * as Haptics from "expo-haptics";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { usePermissionnsStore } from "@/presentations/store/usePermissions";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import * as Sharing from "expo-sharing";
+import { Asset } from "expo-asset";
+import * as FileSystem from "expo-file-system";
+import { Share } from "react-native";
 
 import { useSessions } from "@/hooks/useSessions";
 import { SessionCard } from "@/components/SessionCard";
 import { QRButton } from "@/components/QRButton";
+import { QrCode } from "@/infrastructure/interfaces/qr";
+import { Session } from "@/infrastructure/interfaces/sessions";
+import { getQrCodesBySession } from "@/database/qrRepository";
+import { useSQLiteContext } from "expo-sqlite";
 
 type TabsNavigationProp = BottomTabNavigationProp<{
   index: undefined;
@@ -24,6 +32,8 @@ type TabsNavigationProp = BottomTabNavigationProp<{
 }>;
 
 export default function Home() {
+  const database = useSQLiteContext();
+
   const { sessions, qrCodes } = useSessions();
   const { cameraStatus } = usePermissionnsStore();
   const isPermissionGranted = cameraStatus === "GRANTED";
@@ -55,13 +65,23 @@ export default function Home() {
     }
   };
 
-  const handleShare = () => {
-    console.log("Compartiendo")
-  }
+  const handleShare = async (ses: Session) => {
+    try {
+      const response = await getQrCodesBySession(database, ses.id);
+      const formattedResponse = response
+        .map((qr: QrCode) => `Nombre: ${qr.text}\nURL: ${qr.url ? qr.url : ""}`)
+        .join("\n\n");
+
+      console.log(formattedResponse);
+      await Share.share({ message: formattedResponse });
+    } catch (error) {
+      console.error("Error compartiendo:", error);
+    }
+  };
 
   const handleSeeMore = () => {
-    console.log("Ver más")
-  }
+    console.log("Ver más");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -81,12 +101,12 @@ export default function Home() {
         }
         ListFooterComponent={<View style={styles.footerSpace} />}
         renderItem={({ item }) => (
-          <SessionCard 
-            session={item} 
+          <SessionCard
+            session={item}
             qrCodes={qrCodes[item.id] || []}
             handleShare={handleShare}
-            handleSeeMore={handleSeeMore}            
-            />
+            handleSeeMore={handleSeeMore}
+          />
         )}
       />
       <QRButton
