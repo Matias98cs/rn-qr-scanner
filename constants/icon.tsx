@@ -13,6 +13,6 @@ export type TabRoute = "index" | "configuration";
 export const icon: Record<TabRoute, IconFunction> = {
   index: (props) => <Feather name="home" size={props.size || 24} {...props} />,
   configuration: (props) => (
-    <Feather name="compass" size={props.size || 24} {...props} />
+    <Feather name="settings" size={props.size || 24} {...props} />
   ),
 };

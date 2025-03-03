@@ -61,12 +61,6 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: "Overview",
-          headerShown: false,
-        }}
-      />
       <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
 
       <Pressable
