@@ -13,15 +13,28 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { PermissionsStatus } from "@/infrastructure/interfaces/camera";
 import { usePermissionnsStore } from "@/presentations/store/usePermissions";
+import { useNavigation } from "expo-router";
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+
+type TabsNavigationProp = BottomTabNavigationProp<{
+  index: undefined;
+  configuration: undefined;
+}>;
 
 export default function Home() {
-  const { cameraStatus, requestCameraPermissions } = usePermissionnsStore();
+  const { cameraStatus } = usePermissionnsStore();
   const isPermissionGranted = cameraStatus === PermissionsStatus.GRANTED;
   const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
   const iconColor = useThemeColor({}, "icon");
-  const colorIcon = isPermissionGranted ? iconColor : "grey";
 
+  const colorIcon = isPermissionGranted
+    ? iconColor
+    : colorScheme === "dark"
+    ? "rgba(255, 255, 255, 0.6)"
+    : "rgba(0, 0, 0, 0.5)";
+
+  const navigation = useNavigation<TabsNavigationProp>();
 
   const handlePress = async () => {
     if (isPermissionGranted) {
@@ -35,7 +48,11 @@ export default function Home() {
           { text: "Cancelar", style: "cancel" },
           {
             text: "Ir a Ajustes",
-            onPress: () => router.replace("/(tabs)/configuration"),
+            onPress: () => {
+              setTimeout(() => {
+                navigation.navigate("configuration");
+              }, 100);
+            },
           },
         ]
       );

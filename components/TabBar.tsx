@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, LayoutChangeEvent } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import Animated, {
@@ -32,7 +32,7 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
   }));
 
   const handleTabPress = (
-    route: typeof state.routes[number],
+    route: (typeof state.routes)[number],
     index: number,
     isFocused: boolean
   ) => {
@@ -53,7 +53,7 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
     };
   };
 
-  const handleTabLongPress = (route: typeof state.routes[number]) => {
+  const handleTabLongPress = (route: (typeof state.routes)[number]) => {
     return () => {
       navigation.emit({
         type: "tabLongPress",
@@ -61,6 +61,12 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
       });
     };
   };
+
+  useEffect(() => {
+    tabPositionX.value = withSpring(buttonWidth * state.index, {
+      duration: 500,
+    });
+  }, [state.index]);
 
   return (
     <View onLayout={onTabbarLayout} style={styles.tabbar}>
@@ -92,7 +98,7 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
 
         const onPress = handleTabPress(route, index, isFocused);
         const onLongPress = handleTabLongPress(route);
-        
+
         return (
           <TabBarButton
             key={route.key}
