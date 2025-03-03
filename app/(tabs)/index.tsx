@@ -17,7 +17,6 @@ export default function Home() {
   const isPermissionGranted = Boolean(permission?.granted);
   const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
-  const backgroundColor = useThemeColor({}, "background");
   const iconColor = useThemeColor({}, "icon");
 
   const handlePress = () => {
@@ -34,19 +33,6 @@ export default function Home() {
         }}
       />
       <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
-      <View style={{ gap: 20, paddingTop: 20 }}>
-        <Pressable onPress={requestPermission} disabled={isPermissionGranted}>
-          <Text
-            style={[
-              styles.buttonStyle,
-              { color: isPermissionGranted ? "gray" : "#0E7AFE" },
-            ]}
-          >
-            Pedir permisos de camara
-          </Text>
-        </Pressable>
-      </View>
-
       <Link
         href={"/scanner"}
         asChild
