@@ -5,25 +5,43 @@ import {
   SafeAreaView,
   Pressable,
   useColorScheme,
+  Alert,
 } from "react-native";
-import { Link, Stack } from "expo-router";
-import { useCameraPermissions } from "expo-camera";
+import { router, Stack } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { PermissionsStatus } from "@/infrastructure/interfaces/camera";
+import { usePermissionnsStore } from "@/presentations/store/usePermissions";
 
 export default function Home() {
-  const [permission, requestPermission] = useCameraPermissions();
-  const isPermissionGranted = Boolean(permission?.granted);
+  const { cameraStatus, requestCameraPermissions } = usePermissionnsStore();
+  const isPermissionGranted = cameraStatus === PermissionsStatus.GRANTED;
   const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
   const iconColor = useThemeColor({}, "icon");
+  const colorIcon = isPermissionGranted ? iconColor : "grey";
 
-  const handlePress = () => {
+
+  const handlePress = async () => {
     if (isPermissionGranted) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      router.push("/scanner");
+    } else {
+      Alert.alert(
+        "Permiso Requerido",
+        "Para usar el escáner QR, debes habilitar los permisos en ajustes.",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Ir a Ajustes",
+            onPress: () => router.replace("/(tabs)/configuration"),
+          },
+        ]
+      );
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen
@@ -33,39 +51,25 @@ export default function Home() {
         }}
       />
       <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
-      <Link
-        href={"/scanner"}
-        asChild
-        style={[
+
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [
           styles.qrButtonContainer,
           {
             backgroundColor: colorScheme === "dark" ? "white" : "#252525",
             shadowColor: textColor,
-            shadowOffset: {
-              width: 0,
-              height: 4,
-            },
+            shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 4,
             elevation: 5,
             zIndex: 5,
+            opacity: !isPermissionGranted ? 0.5 : 1,
           },
         ]}
       >
-        <Pressable
-          disabled={!isPermissionGranted}
-          onPress={handlePress}
-          style={({ pressed }) => [
-            styles.qrButton,
-            {
-              opacity: !isPermissionGranted ? 0.5 : 1,
-              backgroundColor: pressed ? "#404040" : "black",
-            },
-          ]}
-        >
-          <Ionicons name="qr-code-outline" size={35} color={iconColor} />
-        </Pressable>
-      </Link>
+        <Ionicons name="qr-code-outline" size={35} color={colorIcon} />
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -88,14 +92,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 150,
     alignSelf: "center",
-    padding: 10,
-    borderRadius: 10,
-    zIndex: 999,
-  },
-  qrButton: {
-    backgroundColor: "black",
-    borderRadius: 10,
     padding: 15,
+    borderRadius: 10,
+    justifyContent: "center",
     alignItems: "center",
   },
 });
