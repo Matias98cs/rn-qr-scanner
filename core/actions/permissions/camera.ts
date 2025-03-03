@@ -1,4 +1,3 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { PermissionsStatus } from "@/infrastructure/interfaces/camera"
 import { Camera } from "expo-camera"
 import { Alert, Linking } from 'react-native';
