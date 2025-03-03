@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -6,24 +6,21 @@ import {
   View,
   FlatList,
   Alert,
-  useColorScheme,
 } from "react-native";
 import { router, useNavigation } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { usePermissionnsStore } from "@/presentations/store/usePermissions";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import * as Sharing from "expo-sharing";
-import { Asset } from "expo-asset";
-import * as FileSystem from "expo-file-system";
 import { Share } from "react-native";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 
 import { useSessions } from "@/hooks/useSessions";
 import { SessionCard } from "@/components/SessionCard";
 import { QRButton } from "@/components/QRButton";
 import { QrCode } from "@/infrastructure/interfaces/qr";
 import { Session } from "@/infrastructure/interfaces/sessions";
-import { getQrCodesBySession } from "@/database/qrRepository";
+import { deleteSession, getQrCodesBySession } from "@/database/qrRepository";
 import { useSQLiteContext } from "expo-sqlite";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -35,11 +32,17 @@ type TabsNavigationProp = BottomTabNavigationProp<{
 export default function Home() {
   const database = useSQLiteContext();
   const [loading, setLoading] = useState<boolean>(false);
-  const { sessions, qrCodes, loading: loadingSession, error } = useSessions();
+  const {
+    sessions,
+    qrCodes,
+    loading: loadingSession,
+    error,
+    refetch,
+  } = useSessions();
   const { cameraStatus } = usePermissionnsStore();
   const isPermissionGranted = cameraStatus === "GRANTED";
-  const colorScheme = useColorScheme();
   const textColor = useThemeColor({}, "text");
+  const { showActionSheetWithOptions } = useActionSheet();
 
   const navigation = useNavigation<TabsNavigationProp>();
 
@@ -96,8 +99,40 @@ export default function Home() {
     }
   };
 
-  const handleSeeMore = () => {
+  const handleDelete = async (ses: Session) => {
+    setLoading(true);
+    try {
+      await deleteSession(database, ses.id);
+      await refetch();
+    } catch (error) {
+      // console.error("Error borrando sesión:", error);
+      Alert.alert("Error borrando", "Ha ocurrido un error.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSeeMore = (ses: Session) => {
     console.log("Ver más");
+    const options = ["Borrar", "Cancelar"];
+    const destructiveButtonIndex = 0;
+    const cancelButtonIndex = 1;
+
+    showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+        destructiveButtonIndex,
+      },
+      (selectedIndex?: number) => {
+        if (selectedIndex === undefined) return;
+        if (selectedIndex === destructiveButtonIndex) {
+          handleDelete(ses);
+        } else if (selectedIndex === cancelButtonIndex) {
+          console.log("No hago nada...");
+        }
+      }
+    );
   };
 
   return (

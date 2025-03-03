@@ -11,40 +11,30 @@ export const useSessions = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    const loadSessions = async () => {
-      try {
-        const data = await getSessions(database);
-        if (isMounted) {
-          setSessions(data);
-        }
-        const qrData: Record<string, QrCode[]> = {};
-        for (const session of data) {
-          const qrCodesForSession = await getQrCodesBySession(database, session.id);
-          qrData[session.id] = qrCodesForSession;
-        }
-        if (isMounted) {
-          setQrCodes(qrData);
-        }
-      } catch (error) {
-        console.error("Error al obtener sesiones:", error);
-        if (isMounted) {
-          setError("Error al obtener sesiones");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+  const loadSessions = async () => {
+    setLoading(true);
+    try {
+      const data = await getSessions(database);
+      setSessions(data);
+
+      const qrData: Record<string, QrCode[]> = {};
+      for (const session of data) {
+        const qrCodesForSession = await getQrCodesBySession(database, session.id);
+        qrData[session.id] = qrCodesForSession;
       }
-    };
+      setQrCodes(qrData);
+      setError(null);
+    } catch (error) {
+      console.error("Error al obtener sesiones:", error);
+      setError("Error al obtener sesiones");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadSessions();
-
-    return () => {
-      isMounted = false;
-    };
   }, [database]);
 
-  return { sessions, qrCodes, loading, error };
+  return { sessions, qrCodes, loading, error, refetch: loadSessions };
 };
