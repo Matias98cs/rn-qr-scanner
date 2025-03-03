@@ -14,7 +14,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import PermissionsCheckerProvider from "@/presentations/providers/PermissionsCheckerProvider";
 
-import { SQLiteDatabase, SQLiteProvider } from "expo-sqlite";
+import { SQLiteProvider } from "expo-sqlite";
 import { createDbIfNeeded, DATABASE_NAME } from "@/database/db";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
