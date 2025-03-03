@@ -33,6 +33,8 @@ export default function Home() {
   const database = useSQLiteContext();
   const [loading, setLoading] = useState<boolean>(false);
   const {
+    setSessions,
+    setQrCodes,
     sessions,
     qrCodes,
     loading: loadingSession,
@@ -100,19 +102,23 @@ export default function Home() {
   };
 
   const handleDelete = async (ses: Session) => {
-    setLoading(true);
+    // setLoading(true);
     try {
       await deleteSession(database, ses.id);
-      await refetch();
+      setSessions((prevSessions) =>
+        prevSessions.filter((s) => s.id !== ses.id)
+      );
+      setQrCodes((prevQrCodes) => {
+        const updated = { ...prevQrCodes };
+        delete updated[ses.id];
+        return updated;
+      });
     } catch (error) {
-      // console.error("Error borrando sesión:", error);
       Alert.alert("Error borrando", "Ha ocurrido un error.");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleSeeMore = (ses: Session) => {
+  const handleSeeMore = async (ses: Session) => {
     console.log("Ver más");
     const options = ["Borrar", "Cancelar"];
     const destructiveButtonIndex = 0;
@@ -127,8 +133,10 @@ export default function Home() {
       (selectedIndex?: number) => {
         if (selectedIndex === undefined) return;
         if (selectedIndex === destructiveButtonIndex) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           handleDelete(ses);
         } else if (selectedIndex === cancelButtonIndex) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           console.log("No hago nada...");
         }
       }

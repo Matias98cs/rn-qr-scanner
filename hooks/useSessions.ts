@@ -36,5 +36,5 @@ export const useSessions = () => {
     loadSessions();
   }, [database]);
 
-  return { sessions, qrCodes, loading, error, refetch: loadSessions };
+  return { setSessions, setQrCodes, sessions, qrCodes, loading, error, refetch: loadSessions };
 };
