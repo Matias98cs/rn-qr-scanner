@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, useColorScheme } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  useColorScheme,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Session } from "@/infrastructure/interfaces/sessions";
 import { QrCode } from "@/infrastructure/interfaces/qr";
@@ -8,6 +14,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 interface SessionCardProps {
   session: Session;
   qrCodes: QrCode[];
+  handleShare: () => void;
+  handleSeeMore: () => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -30,6 +38,8 @@ const formatDate = (dateString: string) => {
 export const SessionCard: React.FC<SessionCardProps> = ({
   session,
   qrCodes,
+  handleShare,
+  handleSeeMore,
 }) => {
   const textColor = useThemeColor({}, "text");
   const colorScheme = useColorScheme();
@@ -61,6 +71,19 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           No hay códigos en esta sesión
         </Text>
       )}
+
+      <View style={styles.buttonsContainer}>
+        <Pressable style={styles.iconButton} onPress={() => handleShare()}>
+          <Ionicons name="share-outline" size={24} color={textColor} />
+        </Pressable>
+        <Pressable style={styles.iconButton} onPress={() => handleSeeMore()}>
+          <Ionicons
+            name="ellipsis-horizontal-outline"
+            size={24}
+            color={textColor}
+          />
+        </Pressable>
+      </View>
     </View>
   );
 };
@@ -68,7 +91,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 const styles = StyleSheet.create({
   sessionCard: {
     width: "100%",
-    // backgroundColor: "#252525",
     padding: 16,
     borderRadius: 15,
     marginBottom: 20,
@@ -96,5 +118,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginTop: 10,
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 15,
+  },
+  iconButton: {
+    marginLeft: 15,
+    padding: 5,
   },
 });

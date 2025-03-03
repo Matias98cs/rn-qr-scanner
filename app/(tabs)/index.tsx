@@ -14,7 +14,6 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { usePermissionnsStore } from "@/presentations/store/usePermissions";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-// Hooks y componentes importados
 import { useSessions } from "@/hooks/useSessions";
 import { SessionCard } from "@/components/SessionCard";
 import { QRButton } from "@/components/QRButton";
@@ -56,6 +55,14 @@ export default function Home() {
     }
   };
 
+  const handleShare = () => {
+    console.log("Compartiendo")
+  }
+
+  const handleSeeMore = () => {
+    console.log("Ver más")
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
@@ -74,7 +81,12 @@ export default function Home() {
         }
         ListFooterComponent={<View style={styles.footerSpace} />}
         renderItem={({ item }) => (
-          <SessionCard session={item} qrCodes={qrCodes[item.id] || []} />
+          <SessionCard 
+            session={item} 
+            qrCodes={qrCodes[item.id] || []}
+            handleShare={handleShare}
+            handleSeeMore={handleSeeMore}            
+            />
         )}
       />
       <QRButton

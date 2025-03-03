@@ -8,7 +8,6 @@ import { useSQLiteContext } from "expo-sqlite";
 import { saveQrCode } from "@/database/qrRepository";
 import BottomSheet from "@/components/ButtomSheet";
 
-// Hooks personalizados
 import { useSession } from "@/hooks/useSession";
 import { useQrLock } from "@/hooks/useQrLock";
 import { useScannedData } from "@/hooks/useScannedData";
