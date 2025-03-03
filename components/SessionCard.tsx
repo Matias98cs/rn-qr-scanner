@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Session } from "@/infrastructure/interfaces/sessions";
 import { QrCode } from "@/infrastructure/interfaces/qr";
@@ -32,9 +32,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   qrCodes,
 }) => {
   const textColor = useThemeColor({}, "text");
+  const colorScheme = useColorScheme();
 
   return (
-    <View style={styles.sessionCard}>
+    <View
+      style={[
+        styles.sessionCard,
+        {
+          backgroundColor: colorScheme === "dark" ? "#252525" : "white",
+          borderWidth: colorScheme === "dark" ? 0 : 0.5,
+        },
+      ]}
+    >
       <Text style={[styles.sessionTitle, { color: textColor }]}>
         {session.name}
       </Text>
@@ -59,9 +68,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 const styles = StyleSheet.create({
   sessionCard: {
     width: "100%",
-    backgroundColor: "#252525",
+    // backgroundColor: "#252525",
     padding: 16,
-    borderRadius: 10,
+    borderRadius: 15,
     marginBottom: 20,
   },
   sessionTitle: {
