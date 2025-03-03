@@ -27,6 +27,23 @@ type TabsNavigationProp = BottomTabNavigationProp<{
   configuration: undefined;
 }>;
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return (
+    date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }) +
+    " " +
+    date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+  );
+};
+
 export default function Home() {
   const database = useSQLiteContext();
   const { cameraStatus } = usePermissionnsStore();
@@ -94,11 +111,8 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text> */}
       <FlatList
-        style={{
-          width: "100%",
-        }}
+        style={styles.list}
         data={sessions}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
@@ -107,15 +121,20 @@ export default function Home() {
           </Text>
         }
         ListHeaderComponent={
-          <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
+          <View style={styles.headerContainer}>
+            <Text style={[styles.title, { color: textColor }]}>QR Scanner</Text>
+          </View>
         }
+        ListFooterComponent={<View style={styles.footerSpace} />}
         scrollEnabled={true}
         renderItem={({ item }) => (
           <View style={styles.sessionCard}>
             <Text style={[styles.sessionTitle, { color: textColor }]}>
               {item.name}
             </Text>
-            <Text style={styles.sessionDate}>{item.created_at}</Text>
+            <Text style={styles.sessionDate}>
+              {formatDate(item.created_at)}
+            </Text>
 
             {qrCodes[item.id]?.length > 0 ? (
               qrCodes[item.id].map((qr) => (
@@ -131,12 +150,20 @@ export default function Home() {
                 </View>
               ))
             ) : (
-              <Text style={styles.noQrText}>No hay códigos en esta sesión</Text>
+              <Text
+                style={{
+                  color: textColor,
+                  fontSize: 16,
+                  textAlign: "center",
+                  marginTop: 10,
+                }}
+              >
+                No hay códigos en esta sesión
+              </Text>
             )}
           </View>
         )}
       />
-
       <Pressable
         onPress={handlePress}
         style={({ pressed }) => [
@@ -148,7 +175,6 @@ export default function Home() {
             shadowOpacity: 0.3,
             shadowRadius: 4,
             elevation: 5,
-            zIndex: 5,
             opacity: !isPermissionGranted ? 0.5 : 1,
           },
         ]}
@@ -162,29 +188,25 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    paddingTop: 80,
+    paddingTop: 50,
+  },
+  list: {
+    flex: 1,
     paddingHorizontal: 16,
+  },
+  headerContainer: {
+    alignItems: "center",
+    paddingBottom: 10,
   },
   title: {
     fontSize: 30,
     fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
   },
   noDataText: {
     fontSize: 16,
     textAlign: "center",
     marginTop: 20,
-  },
-  qrButtonContainer: {
-    position: "absolute",
-    bottom: 150,
-    alignSelf: "center",
-    padding: 15,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
   },
   sessionCard: {
     width: "100%",
@@ -212,9 +234,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 10,
   },
-  noQrText: {
-    fontSize: 14,
-    color: "gray",
-    marginTop: 5,
+  footerSpace: {
+    height: 100,
+  },
+  qrButtonContainer: {
+    position: "absolute",
+    bottom: 130,
+    alignSelf: "center",
+    padding: 15,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
