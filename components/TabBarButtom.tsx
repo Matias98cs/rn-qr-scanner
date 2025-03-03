@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 interface TabBarButtonProps {
   onPress: () => void;
@@ -55,7 +56,10 @@ const TabBarButton: React.FC<TabBarButtonProps> = ({
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onPress();
+      }}
       onLongPress={onLongPress}
       style={[styles.tabbarItem, style]}
     >

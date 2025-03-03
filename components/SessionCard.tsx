@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Session } from "@/infrastructure/interfaces/sessions";
 import { QrCode } from "@/infrastructure/interfaces/qr";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import * as Haptics from "expo-haptics";
 
 interface SessionCardProps {
   session: Session;
@@ -75,13 +76,19 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       <View style={styles.buttonsContainer}>
         <Pressable
           style={styles.iconButton}
-          onPress={() => handleShare(session)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            handleShare(session);
+          }}
         >
           <Ionicons name="share-outline" size={24} color={textColor} />
         </Pressable>
         <Pressable
           style={styles.iconButton}
-          onPress={() => handleSeeMore(session)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            handleSeeMore(session);
+          }}
         >
           <Ionicons
             name="ellipsis-horizontal-outline"

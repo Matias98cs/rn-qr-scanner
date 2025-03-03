@@ -83,13 +83,14 @@ export default function Home() {
     try {
       const response = await getQrCodesBySession(database, ses.id);
       const formattedResponse = response
-        .map((qr: QrCode) => `Nombre: ${qr.text}\nURL: ${qr.url ? qr.url : ""}`)
+        .map((qr: QrCode) => `Texto: ${qr.text}\nURL: ${qr.url ? qr.url : ""}`)
         .join("\n\n");
 
-      console.log(formattedResponse);
+      // console.log(formattedResponse);
       await Share.share({ message: formattedResponse });
     } catch (error) {
-      console.error("Error compartiendo:", error);
+      // console.error("Error compartiendo:", error);
+      Alert.alert("Error compartiendo", "Ha ocurrido un error.");
     } finally {
       setLoading(false);
     }

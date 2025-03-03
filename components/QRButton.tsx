@@ -24,7 +24,10 @@ export const QRButton: React.FC<QRButtonProps> = ({
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.qrButtonContainer,
         {
