@@ -14,6 +14,8 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import PermissionsCheckerProvider from "@/presentations/providers/PermissionsCheckerProvider";
 
+import { SQLiteDatabase, SQLiteProvider } from "expo-sqlite";
+import { createDbIfNeeded, DATABASE_NAME } from "@/database/db";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -36,16 +38,18 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <PermissionsCheckerProvider>
-          <Stack>
-            <Stack.Screen
-              name="(tabs)"
-              options={{
-                headerShown: false,
-              }}
-            />
-          </Stack>
-        </PermissionsCheckerProvider>
+        <SQLiteProvider databaseName={DATABASE_NAME} onInit={createDbIfNeeded}>
+          <PermissionsCheckerProvider>
+            <Stack>
+              <Stack.Screen
+                name="(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+            </Stack>
+          </PermissionsCheckerProvider>
+        </SQLiteProvider>
         <StatusBar style="auto" />
       </ThemeProvider>
     </GestureHandlerRootView>
