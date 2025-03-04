@@ -7,8 +7,10 @@ import {
   StyleSheet,
   PanResponder,
   Pressable,
+  useColorScheme,
 } from "react-native";
 import ScannedItem from "./ScannedItem";
+import * as Haptics from "expo-haptics";
 
 const MIN_MODAL_HEIGHT = 200;
 const MAX_MODAL_HEIGHT = 700;
@@ -24,18 +26,26 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   onDeleteItem,
   onSend,
 }) => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  const bottomSheetBackground = isDark
+    ? "rgba(0, 0, 0, 0.9)"
+    : "rgba(255, 255, 255, 0.9)";
+  const dataTextColor = isDark ? "#fff" : "#000";
+  const sendButtonColor = isDark ? "white" : "black";
+  const sendButtonText = isDark ? "#252525" : "white";
+
   const modalHeight = useRef(new Animated.Value(MIN_MODAL_HEIGHT)).current;
   const dragStartHeight = useRef(MIN_MODAL_HEIGHT);
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dy) > 5;
-      },
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dy) > 5;
-      },
-      onPanResponderMove: (evt, gestureState) => {
+      onStartShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dy) > 5,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dy) > 5,
+      onPanResponderMove: (_, gestureState) => {
         let newHeight = dragStartHeight.current - gestureState.dy;
         newHeight = Math.max(
           MIN_MODAL_HEIGHT,
@@ -64,11 +74,14 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   return (
     <Animated.View
       pointerEvents="auto"
-      style={[styles.bottomSheet, { height: modalHeight }]}
+      style={[
+        styles.bottomSheet,
+        { height: modalHeight, backgroundColor: bottomSheetBackground },
+      ]}
       {...panResponder.panHandlers}
     >
       <View style={styles.handleContainer}>
-        <View style={styles.handle} />
+        <View style={[styles.handle]} />
       </View>
 
       <ScrollView
@@ -80,7 +93,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             <ScannedItem key={index} data={item} onDelete={onDeleteItem} />
           ))
         ) : (
-          <Text style={styles.dataText}>Escanea un código</Text>
+          <Text style={[styles.dataText, { color: dataTextColor }]}>
+            Escanea un código
+          </Text>
         )}
 
         {scannedData.length > 0 && (
@@ -88,12 +103,16 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             hitSlop={10}
             style={({ pressed }) => [
               styles.sendButton,
-              { backgroundColor: pressed ? "#252525" : "black" },
+              { backgroundColor: sendButtonColor },
             ]}
-            // onPress={() => console.log("Hola")} // ✅ Ya debería responder bien
-            onPressOut={onSend}
+            onPressOut={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onSend();
+            }}
           >
-            <Text style={styles.btnText}>Enviar</Text>
+            <Text style={[styles.btnText, { color: sendButtonText }]}>
+              Aceptar
+            </Text>
           </Pressable>
         )}
       </ScrollView>
@@ -107,7 +126,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(255,255,255,0.9)",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 16,
@@ -139,7 +157,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   btnText: {
-    color: "white",
     textAlign: "center",
     fontWeight: "bold",
   },

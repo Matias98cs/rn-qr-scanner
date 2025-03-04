@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, SafeAreaView, StyleSheet, Pressable, Alert } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  Pressable,
+  Alert,
+  useColorScheme,
+} from "react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -11,12 +18,11 @@ import BottomSheet from "@/components/ButtomSheet";
 import { useSession } from "@/hooks/useSession";
 import { useQrLock } from "@/hooks/useQrLock";
 import { useScannedData } from "@/hooks/useScannedData";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Scanner() {
   const router = useRouter();
-  const textColor = useThemeColor({}, "text");
+  const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const database = useSQLiteContext();
   const sessionId = useSession();
@@ -24,28 +30,69 @@ export default function Scanner() {
   const { scannedData, addData, deleteData } = useScannedData();
   const scannedDataRef = useRef(scannedData);
   const [loading, setLoading] = useState<boolean>(false);
+  const [dataSaved, setDataSaved] = useState(false);
 
   useEffect(() => {
+    const isDark = colorScheme === "dark";
+    const headerBackgroundColor = isDark ? "#000000" : "#FFFFFF";
+    const headerTextColor = isDark ? "#FFFFFF" : "#252525";
+
     navigation.setOptions({
       title: "Lector QR",
       headerShadowVisible: false,
-      headerStyle: { backgroundColor: "transparent" },
+      headerStyle: {
+        backgroundColor: headerBackgroundColor,
+      },
+      headerTitleStyle: { color: headerTextColor },
       headerLeft: () => (
         <Pressable onPressOut={() => router.back()}>
           <Ionicons
             name="arrow-back-outline"
-            color={textColor}
+            color={headerTextColor}
             size={24}
             style={{ marginRight: 10 }}
           />
         </Pressable>
       ),
     });
-  }, [navigation, router, textColor]);
+  }, [navigation, router, colorScheme]);
 
   useEffect(() => {
     scannedDataRef.current = scannedData;
   }, [scannedData]);
+
+  // Listener beforeRemove: si hay datos sin guardar, se pregunta y se elimina la sesión al confirmar salir
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (dataSaved) return;
+      if (scannedData.length > 0) {
+        e.preventDefault();
+        Alert.alert(
+          "Datos sin guardar",
+          "Has escaneado códigos sin enviarlos. Si sales, se descartarán estos datos. ¿Estás seguro de que deseas salir?",
+          [
+            { text: "Cancelar", style: "cancel", onPress: () => {} },
+            {
+              text: "Salir",
+              style: "destructive",
+              onPress: async () => {
+                if (sessionId) {
+                  try {
+                    await deleteSession(database, sessionId);
+                    console.log("Sesión eliminada por salir sin enviar datos");
+                  } catch (err) {
+                    console.error("Error eliminando sesión:", err);
+                  }
+                }
+                navigation.dispatch(e.data.action);
+              },
+            },
+          ]
+        );
+      }
+    });
+    return unsubscribe;
+  }, [navigation, scannedData, dataSaved, sessionId, database]);
 
   useEffect(() => {
     return () => {
@@ -74,16 +121,19 @@ export default function Scanner() {
     setLoading(true);
     if (!sessionId) {
       Alert.alert("Error", "No hay sesión activa.");
+      setLoading(false);
       return;
     }
     if (scannedData.length === 0) {
       Alert.alert("No hay datos", "No has escaneado ningún código.");
+      setLoading(false);
       return;
     }
     try {
       for (const data of scannedData) {
         await saveQrCode(database, sessionId, data, null);
       }
+      setDataSaved(true);
       Alert.alert(
         "Códigos guardados",
         "Se han guardado correctamente.",
