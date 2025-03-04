@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, SafeAreaView, StyleSheet, Pressable, Alert } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  Pressable,
+  Alert,
+  useColorScheme,
+} from "react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -11,12 +18,11 @@ import BottomSheet from "@/components/ButtomSheet";
 import { useSession } from "@/hooks/useSession";
 import { useQrLock } from "@/hooks/useQrLock";
 import { useScannedData } from "@/hooks/useScannedData";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Scanner() {
   const router = useRouter();
-  const textColor = useThemeColor({}, "text");
+  const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const database = useSQLiteContext();
   const sessionId = useSession();
@@ -26,22 +32,29 @@ export default function Scanner() {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    const isDark = colorScheme === "dark";
+    const headerBackgroundColor = isDark ? "#000000" : "#FFFFFF";
+    const headerTextColor = isDark ? "#FFFFFF" : "#252525";
+    
     navigation.setOptions({
       title: "Lector QR",
       headerShadowVisible: false,
-      headerStyle: { backgroundColor: "transparent" },
+      headerStyle: {
+        backgroundColor: headerBackgroundColor,
+      },
+      headerTitleStyle: { color: headerTextColor },
       headerLeft: () => (
         <Pressable onPressOut={() => router.back()}>
           <Ionicons
             name="arrow-back-outline"
-            color={textColor}
+            color={headerTextColor}
             size={24}
             style={{ marginRight: 10 }}
           />
         </Pressable>
       ),
     });
-  }, [navigation, router, textColor]);
+  }, [navigation, router, colorScheme]);
 
   useEffect(() => {
     scannedDataRef.current = scannedData;
