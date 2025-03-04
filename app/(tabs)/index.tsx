@@ -91,10 +91,8 @@ export default function Home() {
         .map((qr: QrCode) => `Texto: ${qr.text}\nURL: ${qr.url ? qr.url : ""}`)
         .join("\n\n");
 
-      // console.log(formattedResponse);
       await Share.share({ message: formattedResponse });
     } catch (error) {
-      // console.error("Error compartiendo:", error);
       Alert.alert("Error compartiendo", "Ha ocurrido un error.");
     } finally {
       setLoading(false);
@@ -102,7 +100,6 @@ export default function Home() {
   };
 
   const handleDelete = async (ses: Session) => {
-    // setLoading(true);
     try {
       await deleteSession(database, ses.id);
       setSessions((prevSessions) =>
@@ -119,7 +116,6 @@ export default function Home() {
   };
 
   const handleSeeMore = async (ses: Session) => {
-    console.log("Ver más");
     const options = ["Borrar", "Cancelar"];
     const destructiveButtonIndex = 0;
     const cancelButtonIndex = 1;
