@@ -4,9 +4,10 @@
     "slug": "app-qr-scanner",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icons/icon_logo.png",
+    "icon": "./assets/icon_logo_foreground.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "backgroundColor": "#ffffff",
     "resizeMode": "contain",
     "newArchEnabled": true,
     "ios": {
@@ -15,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/icon01.png",
+        "foregroundImage": "./assets/icon_logo_foreground.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -34,7 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/icon02.png",
+          "image": "./assets/icon_logo_foreground.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
