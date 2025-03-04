@@ -7,6 +7,7 @@
     "icon": "./assets/icons/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "resizeMode": "contain",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
