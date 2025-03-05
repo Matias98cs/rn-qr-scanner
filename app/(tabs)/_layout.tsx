@@ -10,6 +10,13 @@ const TabLayout = () => {
         options={{ title: "Inicio", headerShown: false }}
       />
       <Tabs.Screen
+        name="scanQr"
+        options={{
+          title: "QR",
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
         name="configuration"
         options={{
           title: "Configuraciones",
