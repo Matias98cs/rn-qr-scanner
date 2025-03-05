@@ -8,6 +8,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { normalize } from "@/helpers/fontNormalize";
 
 interface TabBarButtonProps {
   onPress: () => void;
@@ -64,7 +65,7 @@ const TabBarButton: React.FC<TabBarButtonProps> = ({
       style={[styles.tabbarItem, style]}
     >
       <Animated.View style={[animatedIconStyle, styles.iconContainer]}>
-        {icon[routeName]({ color: isFocused ? "#FFF" : "#252525", size: 24 })}
+        {icon[routeName]({ color: isFocused ? "#FFF" : "#252525", size: 24})}
       </Animated.View>
       <Animated.Text
         style={[
@@ -90,8 +91,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   label: {
-    fontSize: 12,
-    // marginTop: 4,
+    fontSize: normalize(8),
+    marginTop: 4,
   },
 });
 
