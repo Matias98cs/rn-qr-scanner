@@ -82,6 +82,8 @@ export default function Home() {
     );
   }
 
+  console.log(`QR BTN SHOW : ${keyboardVisible}`)
+
   const handlePress = async () => {
     if (isPermissionGranted) {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
