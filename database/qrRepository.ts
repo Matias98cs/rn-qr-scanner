@@ -73,3 +73,23 @@ export const deleteSession = async (database: SQLiteDatabase, sessionId: string)
         throw error;
     }
 };
+
+
+export const editNameSession = async (database: SQLiteDatabase, sessionId: string, newName: string) => {
+    try {
+        const results = `
+        UPDATE sessions
+        SET name = ?
+        WHERE id = ?;
+        `
+
+        const resultados = await database.runAsync(
+            results,
+            [newName, sessionId]
+        )
+        return resultados
+    } catch (error) {
+        console.error("Error editando nombre de sesión:", error);
+        throw error;
+    }
+}

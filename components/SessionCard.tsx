@@ -1,22 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
+  StyleSheet,
+  TextInput,
   useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Session } from "@/infrastructure/interfaces/sessions";
 import { QrCode } from "@/infrastructure/interfaces/qr";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import * as Haptics from "expo-haptics";
 
 interface SessionCardProps {
   session: Session;
   qrCodes: QrCode[];
   handleShare: (session: Session) => void;
   handleSeeMore: (session: Session) => void;
+  isEditing: boolean;
+  setEditingSessionId: (id: string | null) => void;
+  handleEditSessionName: (id: string, name: string) => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -41,7 +45,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   qrCodes,
   handleShare,
   handleSeeMore,
+  isEditing,
+  setEditingSessionId,
+  handleEditSessionName
 }) => {
+  const [input, setInput] = useState<string>(session.name);
   const textColor = useThemeColor({}, "text");
   const colorScheme = useColorScheme();
 
@@ -55,9 +63,47 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         },
       ]}
     >
-      <Text style={[styles.sessionTitle, { color: textColor }]}>
-        {session.name}
-      </Text>
+      {isEditing ? (
+        <View style={styles.editContainer}>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            style={styles.input}
+          />
+          <View style={styles.editButtons}>
+            <Pressable style={styles.editButton} onPress={() => {
+              handleEditSessionName(session.id, input);
+              setEditingSessionId(null)
+            }}>
+              <Ionicons name="checkmark-outline" size={20} color={"white"} />
+            </Pressable>
+            <Pressable
+              style={styles.editButton}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setEditingSessionId(null);
+              }}
+            >
+              <Ionicons name="close" size={20} color="white" />
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.headerContainer}>
+          <Text style={[styles.sessionTitle, { color: textColor }]}>
+            {session.name}
+          </Text>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setInput(session.name);
+              setEditingSessionId(session.id);
+            }}
+          >
+            <Ionicons name="pencil" size={20} color={textColor} />
+          </Pressable>
+        </View>
+      )}
       <Text style={styles.sessionDate}>{formatDate(session.created_at)}</Text>
 
       {qrCodes && qrCodes.length > 0 ? (
@@ -108,6 +154,11 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginBottom: 20,
   },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   sessionTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -141,4 +192,31 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     padding: 5,
   },
+  editContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 10,
+  },
+  input: {
+    borderColor: "#252525",
+    borderWidth: 1,
+    width: "70%",
+    borderRadius: 15,
+    padding: 8,
+  },
+  editButtons: {
+    flexDirection: "row",
+    gap: 10,
+    width: "30%",
+    justifyContent: "space-evenly",
+  },
+  editButton: {
+    backgroundColor: "black",
+    padding: 8,
+    borderRadius: 15,
+  },
 });
+
+export default SessionCard;

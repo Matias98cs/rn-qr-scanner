@@ -20,7 +20,7 @@ import { SessionCard } from "@/components/SessionCard";
 import { QRButton } from "@/components/QRButton";
 import { QrCode } from "@/infrastructure/interfaces/qr";
 import { Session } from "@/infrastructure/interfaces/sessions";
-import { deleteSession, getQrCodesBySession } from "@/database/qrRepository";
+import { deleteSession, editNameSession, getQrCodesBySession } from "@/database/qrRepository";
 import { useSQLiteContext } from "expo-sqlite";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -45,6 +45,7 @@ export default function Home() {
   const isPermissionGranted = cameraStatus === "GRANTED";
   const textColor = useThemeColor({}, "text");
   const { showActionSheetWithOptions } = useActionSheet();
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   const navigation = useNavigation<TabsNavigationProp>();
 
@@ -139,6 +140,19 @@ export default function Home() {
     );
   };
 
+  const handleEditSessionName = async (id: string, newName: string) => {
+    try {
+      await editNameSession(database, id, newName);
+      setSessions((prevSessions) =>
+        prevSessions.map((session) =>
+          session.id === id ? { ...session, name: newName } : session
+        )
+      );
+    } catch (error) {
+      Alert.alert("Error", "Ha ocurrido un error al editar el nombre de la sesión.");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {loading && <LoadingScreen />}
@@ -163,6 +177,9 @@ export default function Home() {
             qrCodes={qrCodes[item.id] || []}
             handleShare={handleShare}
             handleSeeMore={handleSeeMore}
+            isEditing={editingSessionId === item.id}
+            setEditingSessionId={setEditingSessionId}
+            handleEditSessionName={handleEditSessionName}
           />
         )}
       />
