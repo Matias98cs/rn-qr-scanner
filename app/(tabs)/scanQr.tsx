@@ -1,15 +1,16 @@
+import React, { useEffect, useRef } from "react";
 import {
   View,
-  Text,
   SafeAreaView,
   StyleSheet,
   AppState,
   Linking,
 } from "react-native";
 import { CameraView } from "expo-camera";
-import { useEffect, useRef } from "react";
+import { useIsFocused } from "@react-navigation/native";
 
 const ScanQRScreen = () => {
+  const isFocused = useIsFocused();
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
 
@@ -32,19 +33,21 @@ const ScanQRScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.cameraContainer}>
-        <CameraView
-          style={StyleSheet.absoluteFillObject}
-          facing="back"
-          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-          onBarcodeScanned={({ data }) => {
-            if (data && !qrLock.current) {
-              qrLock.current = true;
-              setTimeout(async () => {
-                await Linking.openURL(data);
-              }, 500);
-            }
-          }}
-        />
+        {isFocused && (
+          <CameraView
+            style={StyleSheet.absoluteFillObject}
+            facing="back"
+            barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+            onBarcodeScanned={({ data }) => {
+              if (data && !qrLock.current) {
+                qrLock.current = true;
+                setTimeout(async () => {
+                  await Linking.openURL(data);
+                }, 500);
+              }
+            }}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
