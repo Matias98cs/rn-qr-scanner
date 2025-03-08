@@ -79,7 +79,6 @@ export default function Scanner() {
                 if (sessionId) {
                   try {
                     await deleteSession(database, sessionId);
-                    console.log("Sesión eliminada por salir sin enviar datos");
                   } catch (err) {
                     console.error("Error eliminando sesión:", err);
                   }
@@ -98,7 +97,7 @@ export default function Scanner() {
     return () => {
       if (scannedDataRef.current.length === 0 && sessionId) {
         deleteSession(database, sessionId)
-          .then(() => console.log("Sesión eliminada por no tener códigos"))
+          .then(() => {})
           .catch((err) =>
             console.error("Error eliminando sesión sin códigos:", err)
           );

@@ -155,7 +155,7 @@ export default function Home() {
           handleDelete(ses);
         } else if (selectedIndex === cancelButtonIndex) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          console.log("No hago nada...");
+          // console.log("No hago nada...");
         }
       }
     );

@@ -11,7 +11,6 @@ export const createSession = async (database: SQLiteDatabase, name: string) => {
             "INSERT INTO sessions (id, name) VALUES (?, ?);",
             [sessionId, name]
         );
-        console.log("Sesión creada con ID:", sessionId);
         return sessionId;
     } catch (error) {
         console.error("Error creando sesión:", error);
@@ -26,7 +25,6 @@ export const saveQrCode = async (database: SQLiteDatabase, sessionId: string, te
             "INSERT INTO qr_codes (session_id, text, url) VALUES (?, ?, ?);",
             [sessionId, text, url]
         );
-        console.log("Código QR guardado en sesión:", sessionId);
     } catch (error) {
         console.error("Error guardando código QR:", error);
         throw error;
@@ -67,7 +65,6 @@ export const getQrCodesBySession = async (database: SQLiteDatabase, sessionId: s
 export const deleteSession = async (database: SQLiteDatabase, sessionId: string) => {
     try {
         await database.runAsync("DELETE FROM sessions WHERE id = ?;", [sessionId]);
-        console.log(`Sesión ${sessionId} eliminada junto con sus códigos QR.`);
     } catch (error) {
         console.error("Error eliminando sesión:", error);
         throw error;
