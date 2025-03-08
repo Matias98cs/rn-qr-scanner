@@ -215,7 +215,12 @@ export default function Home() {
             handleEditSessionName={handleEditSessionName}
           />
         )}
-      />
+        />
+        {
+          loading && (
+            <LoadingScreen/>
+          )
+        }
     </KeyboardAvoidingView>
   );
 }
