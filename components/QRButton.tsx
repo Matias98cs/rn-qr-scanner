@@ -55,5 +55,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 1000, // Agrega esta propiedad
   },
 });
