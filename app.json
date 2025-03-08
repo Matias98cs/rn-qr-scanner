@@ -23,7 +23,8 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.matias98cs.appqrscanner"
+      "package": "com.matias98cs.appqrscanner",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -6,6 +6,9 @@ import {
   View,
   FlatList,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from "react-native";
 import { router, useNavigation } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -20,7 +23,11 @@ import { SessionCard } from "@/components/SessionCard";
 import { QRButton } from "@/components/QRButton";
 import { QrCode } from "@/infrastructure/interfaces/qr";
 import { Session } from "@/infrastructure/interfaces/sessions";
-import { deleteSession, editNameSession, getQrCodesBySession } from "@/database/qrRepository";
+import {
+  deleteSession,
+  editNameSession,
+  getQrCodesBySession,
+} from "@/database/qrRepository";
 import { useSQLiteContext } from "expo-sqlite";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -46,8 +53,22 @@ export default function Home() {
   const textColor = useThemeColor({}, "text");
   const { showActionSheetWithOptions } = useActionSheet();
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const navigation = useNavigation<TabsNavigationProp>();
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   if (loadingSession) {
     return <LoadingScreen />;
@@ -149,13 +170,25 @@ export default function Home() {
         )
       );
     } catch (error) {
-      Alert.alert("Error", "Ha ocurrido un error al editar el nombre de la sesión.");
+      Alert.alert(
+        "Error",
+        "Ha ocurrido un error al editar el nombre de la sesión."
+      );
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {loading && <LoadingScreen />}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      {!keyboardVisible && (
+        <QRButton
+          onPress={handlePress}
+          isPermissionGranted={isPermissionGranted}
+        />
+      )}
       <FlatList
         style={styles.list}
         data={sessions}
@@ -183,11 +216,7 @@ export default function Home() {
           />
         )}
       />
-      <QRButton
-        onPress={handlePress}
-        isPermissionGranted={isPermissionGranted}
-      />
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
