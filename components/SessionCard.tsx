@@ -47,11 +47,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   handleSeeMore,
   isEditing,
   setEditingSessionId,
-  handleEditSessionName
+  handleEditSessionName,
 }) => {
   const [input, setInput] = useState<string>(session.name);
   const textColor = useThemeColor({}, "text");
   const colorScheme = useColorScheme();
+
+  const isDark = colorScheme === "dark";
+  const iconbackgroundColor = isDark ? "#FFFFFF" : "#252525";
+  const iconColor = isDark ? "#252525" : "#FFFFFF";
 
   return (
     <View
@@ -68,23 +72,38 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           <TextInput
             value={input}
             onChangeText={setInput}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                borderColor: iconbackgroundColor,
+                color: textColor,
+              },
+            ]}
           />
           <View style={styles.editButtons}>
-            <Pressable style={styles.editButton} onPress={() => {
-              handleEditSessionName(session.id, input);
-              setEditingSessionId(null)
-            }}>
-              <Ionicons name="checkmark-outline" size={20} color={"white"} />
+            <Pressable
+              style={[
+                styles.editButton,
+                { backgroundColor: iconbackgroundColor },
+              ]}
+              onPress={() => {
+                handleEditSessionName(session.id, input);
+                setEditingSessionId(null);
+              }}
+            >
+              <Ionicons name="checkmark-outline" size={20} color={iconColor} />
             </Pressable>
             <Pressable
-              style={styles.editButton}
+              style={[
+                styles.editButton,
+                { backgroundColor: iconbackgroundColor },
+              ]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 setEditingSessionId(null);
               }}
             >
-              <Ionicons name="close" size={20} color="white" />
+              <Ionicons name="close" size={20} color={iconColor} />
             </Pressable>
           </View>
         </View>
@@ -200,7 +219,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   input: {
-    borderColor: "#252525",
     borderWidth: 1,
     width: "70%",
     borderRadius: 15,
