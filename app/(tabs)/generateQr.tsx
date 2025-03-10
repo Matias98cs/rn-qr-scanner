@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import React, { useState, useRef } from "react";
 import * as MediaLibrary from "expo-media-library";
@@ -105,82 +106,88 @@ const GenerateQr = () => {
         message: "Aquí tienes tu código QR",
       });
     } catch (error) {
-    //   console.error("Error al compartir:", error);
+      // console.error("Error al compartir:", error);
     }
   };
 
   return (
     <SafeAreaView
       style={[
-        styles.container,
-        { paddingTop: height * 0.07, paddingHorizontal: 16 },
+        styles.safeArea,
+        {
+          paddingTop: height * 0.05,
+        },
       ]}
     >
-      <Text style={{ color: textColor, fontSize: 30, fontWeight: "bold" }}>
-        Genera tu QR
-      </Text>
-      <Text style={{ color: textColor }}>
-        Ingresa un link para generar tu QR
-      </Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={[styles.title, { color: textColor }]}>Genera tu QR</Text>
+        <Text style={[styles.subtitle, { color: textColor }]}>
+          Ingresa un link para generar tu QR
+        </Text>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          value={inputUrl}
-          onChangeText={setInputUrl}
-          placeholder="https://ejemplo.com"
-          style={[
-            styles.input,
-            { borderColor: iconBackgroundColor, color: textColor },
-          ]}
-        />
-        <Pressable
-          onPress={generateQrCode}
-          disabled={loadingQr}
-          style={[
-            styles.button,
-            {
-              backgroundColor: iconBackgroundColor,
-              opacity: loadingQr ? 0.5 : 1,
-            },
-          ]}
-        >
-          {loadingQr ? (
-            <ActivityIndicator size="small" color={iconColor} />
-          ) : (
-            <Text style={{ color: iconColor }}>Generar</Text>
-          )}
-        </Pressable>
-      </View>
-
-      {loadingQr && (
-        <View style={styles.qrContainer}>
-          <ActivityIndicator size="large" color={iconBackgroundColor} />
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={inputUrl}
+            onChangeText={setInputUrl}
+            placeholder="https://ejemplo.com"
+            style={[
+              styles.input,
+              { borderColor: iconBackgroundColor, color: textColor },
+            ]}
+          />
+          <Pressable
+            onPress={generateQrCode}
+            disabled={loadingQr}
+            style={[
+              styles.button,
+              {
+                backgroundColor: iconBackgroundColor,
+                opacity: loadingQr ? 0.5 : 1,
+              },
+            ]}
+          >
+            {loadingQr ? (
+              <ActivityIndicator size="small" color={iconColor} />
+            ) : (
+              <Text style={{ color: iconColor }}>Generar</Text>
+            )}
+          </Pressable>
         </View>
-      )}
 
-      {qrImageUrl && !loadingQr && (
-        <>
-          <View style={styles.qrContainer} ref={qrRef} collapsable={false}>
-            <Image
-              style={styles.qrImage}
-              source={{
-                uri: qrImageUrl.startsWith("data:image/png;base64,")
-                  ? qrImageUrl
-                  : `data:image/png;base64,${qrImageUrl}`,
-              }}
-            />
+        {loadingQr && (
+          <View style={styles.qrContainer}>
+            <ActivityIndicator size="large" color={iconBackgroundColor} />
           </View>
-          <View style={styles.iconContainer}>
-            <Pressable onPress={saveQrToGallery}>
-              <Ionicons name="download-outline" color={"black"} size={30} />
-            </Pressable>
+        )}
 
-            <Pressable onPress={shareQr}>
-              <Ionicons name="share-social-outline" color={"black"} size={30} />
-            </Pressable>
-          </View>
-        </>
-      )}
+        {qrImageUrl && !loadingQr && (
+          <>
+            <View style={styles.qrContainer} ref={qrRef} collapsable={false}>
+              <Image
+                style={styles.qrImage}
+                source={{
+                  uri: qrImageUrl.startsWith("data:image/png;base64,")
+                    ? qrImageUrl
+                    : `data:image/png;base64,${qrImageUrl}`,
+                }}
+              />
+            </View>
+            <View style={styles.iconContainer}>
+              <Pressable onPress={saveQrToGallery}>
+                <Ionicons name="download-outline" color={"black"} size={30} />
+              </Pressable>
+
+              <Pressable onPress={shareQr}>
+                <Ionicons
+                  name="share-social-outline"
+                  color={"black"}
+                  size={30}
+                />
+              </Pressable>
+            </View>
+          </>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -188,31 +195,45 @@ const GenerateQr = () => {
 export default GenerateQr;
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    flexDirection: "column",
+    backgroundColor: "#FFF",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 150,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 10,
   },
   inputContainer: {
     paddingTop: 20,
-    flexDirection: "column",
+    width: "100%",
     alignItems: "center",
     gap: 10,
   },
   input: {
     borderWidth: 1,
-    width: "100%",
+    width: "90%",
     borderRadius: 15,
     padding: 8,
   },
   button: {
     padding: 12,
     borderRadius: 10,
-    width: 100,
+    width: 120,
     alignItems: "center",
     justifyContent: "center",
   },
   qrContainer: {
-    display: "flex",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 30,
