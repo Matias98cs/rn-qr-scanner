@@ -7,18 +7,32 @@ import {
   Platform,
   useColorScheme,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { usePermissionsStore } from "@/presentations/store/usePermissionsStore";
 import { PermissionsStatus } from "@/infrastructure/interfaces/camera";
-import { usePermissionnsStore } from "@/presentations/store/usePermissions";
 
 const isAndroid = Platform.OS === "android";
 
 const Configuration = () => {
-  const { cameraStatus, requestCameraPermissions } = usePermissionnsStore();
-  const isPermissionGranted = cameraStatus === PermissionsStatus.GRANTED;
+  const {
+    cameraStatus,
+    requestCameraPermissions,
+    checkCameraPermissions,
+    storageStatus,
+    requestStoragePermissions,
+    checkStoragePermissions,
+  } = usePermissionsStore();
+
+  const isCameraGranted = cameraStatus === PermissionsStatus.GRANTED;
+  const isStorageGranted = storageStatus === PermissionsStatus.GRANTED;
   const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    checkCameraPermissions();
+    checkStoragePermissions();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,8 +53,10 @@ const Configuration = () => {
 
       <View style={styles.content}>
         <Text style={[styles.title, { color: useThemeColor({}, "text") }]}>
-          Esta es la pantalla de configuraciones
+          Configuración de permisos
         </Text>
+
+        {/* Permiso de Cámara */}
         <View style={styles.permissionCard}>
           <Text
             style={[
@@ -51,12 +67,42 @@ const Configuration = () => {
             Permiso de cámara
           </Text>
           <Switch
-            value={isPermissionGranted}
+            value={isCameraGranted}
             onValueChange={async () => {
               try {
                 await requestCameraPermissions();
               } catch (error) {
                 console.error("Error al solicitar permisos de cámara:", error);
+              }
+            }}
+            thumbColor={isAndroid ? "white" : "white"}
+            trackColor={{
+              false: colorScheme === "dark" ? "grey" : "lightgrey",
+              true: colorScheme === "dark" ? "white" : "#252525",
+            }}
+          />
+        </View>
+
+        {/* Permiso de Almacenamiento */}
+        <View style={styles.permissionCard}>
+          <Text
+            style={[
+              styles.permissionText,
+              { color: useThemeColor({}, "text") },
+            ]}
+          >
+            Permiso de almacenamiento
+          </Text>
+          <Switch
+            value={isStorageGranted}
+            onValueChange={async () => {
+              try {
+                await requestStoragePermissions();
+              } catch (error) {
+                console.error(
+                  "Error al solicitar permisos de almacenamiento:",
+                  error
+                );
               }
             }}
             thumbColor={isAndroid ? "white" : "white"}
@@ -94,6 +140,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 12,
     borderRadius: 10,
+    marginBottom: 15,
   },
   permissionText: {
     fontSize: 16,
