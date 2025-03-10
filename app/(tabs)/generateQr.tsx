@@ -9,17 +9,21 @@ import {
   View,
   Image,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import * as MediaLibrary from "expo-media-library";
+import { captureRef } from "react-native-view-shot";
+import Share from "react-native-share";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { postGenerateQr } from "@/core/generateQR/generate-qr";
 import { Ionicons } from "@expo/vector-icons";
-import { Share } from "react-native";
 
 const GenerateQr = () => {
   const [inputUrl, setInputUrl] = useState<string>("");
   const [loadingQr, setLoadingQr] = useState<boolean>(false);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const qrRef = useRef<View>(null);
 
   const { height } = useWindowDimensions();
   const colorScheme = useColorScheme();
@@ -28,6 +32,15 @@ const GenerateQr = () => {
   const isDark = colorScheme === "dark";
   const iconBackgroundColor = isDark ? "#FFFFFF" : "#252525";
   const iconColor = isDark ? "#252525" : "#FFFFFF";
+
+  const requestPermissions = async () => {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permiso denegado", "Se necesita acceso a la galería.");
+      return false;
+    }
+    return true;
+  };
 
   const generateQrCode = async () => {
     if (!inputUrl.trim()) {
@@ -51,14 +64,56 @@ const GenerateQr = () => {
     }
   };
 
+  const saveQrToGallery = async () => {
+    if (!qrImageUrl) {
+      Alert.alert("Error", "No hay un código QR para guardar.");
+      return;
+    }
+
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    try {
+      const localUri = await captureRef(qrRef, {
+        format: "png",
+        quality: 1,
+      });
+
+      await MediaLibrary.saveToLibraryAsync(localUri);
+      Alert.alert("Guardado", "El QR se ha guardado en tu galería.");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo guardar la imagen.");
+      console.error("Error guardando la imagen:", error);
+    }
+  };
+
+  const shareQr = async () => {
+    if (!qrImageUrl) {
+      Alert.alert("Error", "No hay un código QR para compartir.");
+      return;
+    }
+
+    try {
+      const localUri = await captureRef(qrRef, {
+        format: "png",
+        quality: 1,
+      });
+
+      await Share.open({
+        url: localUri,
+        type: "image/png",
+        message: "Aquí tienes tu código QR",
+      });
+    } catch (error) {
+    //   console.error("Error al compartir:", error);
+    }
+  };
+
   return (
     <SafeAreaView
       style={[
         styles.container,
-        {
-          paddingTop: height * 0.07,
-          paddingHorizontal: 16,
-        },
+        { paddingTop: height * 0.07, paddingHorizontal: 16 },
       ]}
     >
       <Text style={{ color: textColor, fontSize: 30, fontWeight: "bold" }}>
@@ -75,10 +130,7 @@ const GenerateQr = () => {
           placeholder="https://ejemplo.com"
           style={[
             styles.input,
-            {
-              borderColor: iconBackgroundColor,
-              color: textColor,
-            },
+            { borderColor: iconBackgroundColor, color: textColor },
           ]}
         />
         <Pressable
@@ -107,25 +159,28 @@ const GenerateQr = () => {
       )}
 
       {qrImageUrl && !loadingQr && (
-        <View style={styles.qrContainer}>
-          <Image style={styles.qrImage} source={{ uri: qrImageUrl }} />
-        </View>
+        <>
+          <View style={styles.qrContainer} ref={qrRef} collapsable={false}>
+            <Image
+              style={styles.qrImage}
+              source={{
+                uri: qrImageUrl.startsWith("data:image/png;base64,")
+                  ? qrImageUrl
+                  : `data:image/png;base64,${qrImageUrl}`,
+              }}
+            />
+          </View>
+          <View style={styles.iconContainer}>
+            <Pressable onPress={saveQrToGallery}>
+              <Ionicons name="download-outline" color={"black"} size={30} />
+            </Pressable>
+
+            <Pressable onPress={shareQr}>
+              <Ionicons name="share-social-outline" color={"black"} size={30} />
+            </Pressable>
+          </View>
+        </>
       )}
-
-      <View
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-          alignContent: "center",
-          marginTop: 30,
-          gap: 30,
-        }}
-      >
-        <Ionicons name="download-outline" color={"black"} size={30} />
-
-        <Ionicons name="share-social-outline" color={"black"} size={30} />
-      </View>
     </SafeAreaView>
   );
 };
@@ -166,5 +221,12 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     resizeMode: "contain",
+  },
+  iconContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 30,
+    gap: 30,
   },
 });
