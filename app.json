@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "app-qr-scanner",
+    "name": "CheQR",
     "slug": "app-qr-scanner",
     "version": "1.0.0",
     "orientation": "portrait",
