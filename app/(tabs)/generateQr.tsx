@@ -12,6 +12,7 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import React, { useState, useRef } from "react";
 import * as MediaLibrary from "expo-media-library";
 import { captureRef } from "react-native-view-shot";
@@ -31,6 +32,7 @@ const GenerateQr = () => {
   const textColor = useThemeColor({}, "text");
 
   const isDark = colorScheme === "dark";
+  const backgroundColor = isDark ? "black" : "#FFFFFF";
   const iconBackgroundColor = isDark ? "#FFFFFF" : "#252525";
   const iconColor = isDark ? "#252525" : "#FFFFFF";
 
@@ -66,6 +68,7 @@ const GenerateQr = () => {
   };
 
   const saveQrToGallery = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!qrImageUrl) {
       Alert.alert("Error", "No hay un código QR para guardar.");
       return;
@@ -89,6 +92,7 @@ const GenerateQr = () => {
   };
 
   const shareQr = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!qrImageUrl) {
       Alert.alert("Error", "No hay un código QR para compartir.");
       return;
@@ -116,6 +120,7 @@ const GenerateQr = () => {
         styles.safeArea,
         {
           paddingTop: height * 0.05,
+          backgroundColor: backgroundColor,
         },
       ]}
     >
@@ -130,6 +135,7 @@ const GenerateQr = () => {
             value={inputUrl}
             onChangeText={setInputUrl}
             placeholder="https://ejemplo.com"
+            placeholderTextColor={textColor}
             style={[
               styles.input,
               { borderColor: iconBackgroundColor, color: textColor },
@@ -174,13 +180,17 @@ const GenerateQr = () => {
             </View>
             <View style={styles.iconContainer}>
               <Pressable onPress={saveQrToGallery}>
-                <Ionicons name="download-outline" color={"black"} size={30} />
+                <Ionicons
+                  name="download-outline"
+                  color={iconBackgroundColor}
+                  size={30}
+                />
               </Pressable>
 
               <Pressable onPress={shareQr}>
                 <Ionicons
                   name="share-social-outline"
-                  color={"black"}
+                  color={iconBackgroundColor}
                   size={30}
                 />
               </Pressable>
