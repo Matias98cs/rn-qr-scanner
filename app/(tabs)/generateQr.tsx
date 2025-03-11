@@ -36,6 +36,13 @@ const GenerateQr = () => {
   const iconBackgroundColor = isDark ? "#FFFFFF" : "#252525";
   const iconColor = isDark ? "#252525" : "#FFFFFF";
 
+  const handleInputChange = (text: string) => {
+    setInputUrl(text);
+    if (text.trim() === "") {
+      setQrImageUrl(null);
+    }
+  };
+
   const requestPermissions = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
     if (status !== "granted") {
@@ -133,7 +140,7 @@ const GenerateQr = () => {
         <View style={styles.inputContainer}>
           <TextInput
             value={inputUrl}
-            onChangeText={setInputUrl}
+            onChangeText={handleInputChange}
             placeholder="https://ejemplo.com"
             placeholderTextColor={textColor}
             style={[
