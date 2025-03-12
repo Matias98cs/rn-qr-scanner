@@ -8,14 +8,19 @@ export interface GenerateQrResponse {
 }
 
 
-export const postGenerateQr = async (link: string): Promise<GenerateQrResponse | null> => {
+export const postGenerateQr = async (link: string): Promise<GenerateQrResponse | { error: string } | null> => {
     try {
         const response = await api.post<GenerateQrResponse>(`qr/create-qr-and-return-base64/`, {
             url: link
-        })
-        return response.data
-    } catch (error) {
-        console.log(error)
-        return null;
+        });
+        return response.data;
+    } catch (error: any) {
+        // console.log("Error en la API:", error.response?.data || error.message);
+
+        if (error.response?.data?.error) {
+            return { error: error.response.data.error };
+        }
+
+        return { error: "Ocurrió un error inesperado." };
     }
-}
+};

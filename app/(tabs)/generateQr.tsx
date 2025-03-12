@@ -62,13 +62,16 @@ const GenerateQr = () => {
 
     try {
       const response = await postGenerateQr(inputUrl);
-      if (response) {
+
+      if (response && "error" in response) {
+        Alert.alert(response.error);
+      } else if (response) {
         setQrImageUrl(response.qr_image_base64);
       } else {
-        alert("Error al generar el QR. Intenta de nuevo.");
+        Alert.alert("Error al generar el QR. Intenta de nuevo.");
       }
     } catch (error) {
-      alert("Ocurrió un error al generar el QR.");
+      Alert.alert("Ocurrió un error al generar el QR.");
     } finally {
       setLoadingQr(false);
     }
