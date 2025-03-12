@@ -70,7 +70,7 @@ const TabBarButton: React.FC<TabBarButtonProps> = ({
       <Animated.Text
         style={[
           styles.label,
-          { color: isFocused ? "#673ab7" : "#252525" },
+          { color: isFocused ? "#252525" : "#252525" },
           animatedTextStyle,
         ]}
       >

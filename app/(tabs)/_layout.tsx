@@ -16,6 +16,13 @@ const TabLayout = () => {
           headerShown: false,
         }}
       />
+        <Tabs.Screen
+          name="generateQr"
+          options={{
+            title: "Generar QR",
+            headerShown: false,
+          }}
+        />
       <Tabs.Screen
         name="configuration"
         options={{
@@ -23,6 +30,7 @@ const TabLayout = () => {
           headerShown: false,
         }}
       />
+
     </Tabs>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, LayoutChangeEvent } from "react-native";
+import { View, StyleSheet, LayoutChangeEvent, Dimensions } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import Animated, {
   useAnimatedStyle,
@@ -14,9 +14,23 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
   descriptors,
   navigation,
 }) => {
-  const [dimensions, setDimensions] = useState({ width: 100, height: 20 });
+  const screenWidth = Dimensions.get("window").width;
+
+  const [dimensions, setDimensions] = useState({
+    width: screenWidth - 40,
+    height: 60,
+  });
 
   const buttonWidth = dimensions.width / state.routes.length;
+
+  const tabPositionX = useSharedValue(buttonWidth * state.index);
+
+  useEffect(() => {
+    tabPositionX.value = withSpring(buttonWidth * state.index, {
+      damping: 10,
+      stiffness: 100,
+    });
+  }, [state.index, buttonWidth]);
 
   const onTabbarLayout = (e: LayoutChangeEvent) => {
     setDimensions({
@@ -25,30 +39,18 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
     });
   };
 
-  const tabPositionX = useSharedValue(0);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: tabPositionX.value }],
-  }));
-
   const handleTabPress = (
     route: (typeof state.routes)[number],
     index: number,
     isFocused: boolean
   ) => {
     return () => {
-      tabPositionX.value = withSpring(buttonWidth * index, {
-        duration: 1500,
-      });
-
-      const event = navigation.emit({
-        type: "tabPress",
-        target: route.key,
-        canPreventDefault: true,
-      });
-
-      if (!isFocused && !event.defaultPrevented) {
-        navigation.navigate(route.name, route.params);
+      if (!isFocused) {
+        tabPositionX.value = withSpring(buttonWidth * index, {
+          damping: 10,
+          stiffness: 100,
+        });
+        navigation.navigate(route.name);
       }
     };
   };
@@ -62,28 +64,18 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
     };
   };
 
-  useEffect(() => {
-    tabPositionX.value = withSpring(buttonWidth * state.index, {
-      duration: 500,
-    });
-  }, [state.index]);
-
   return (
     <View onLayout={onTabbarLayout} style={styles.tabbar}>
       <Animated.View
         style={[
-          animatedStyle,
-          {
-            position: "absolute",
-            // backgroundColor: "#732FEB",
-            backgroundColor: "#252525",
-            borderRadius: 30,
-            marginHorizontal: 12,
-            height: dimensions.height - 15,
-            width: buttonWidth - 25,
-          },
+          styles.animatedBackground,
+          useAnimatedStyle(() => ({
+            transform: [{ translateX: tabPositionX.value }],
+          })),
+          { width: buttonWidth - 10 },
         ]}
       />
+
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
 
@@ -96,14 +88,11 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
 
         const isFocused = state.index === index;
 
-        const onPress = handleTabPress(route, index, isFocused);
-        const onLongPress = handleTabLongPress(route);
-
         return (
           <TabBarButton
             key={route.key}
-            onPress={onPress}
-            onLongPress={onLongPress}
+            onPress={handleTabPress(route, index, isFocused)}
+            onLongPress={handleTabLongPress(route)}
             isFocused={isFocused}
             routeName={route.name as TabRoute}
             color={isFocused ? "#FFF" : "#222"}
@@ -118,18 +107,25 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
 const styles = StyleSheet.create({
   tabbar: {
     position: "absolute",
-    bottom: 40,
+    bottom: 30,
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignSelf: "center",
     alignItems: "center",
     backgroundColor: "#fff",
-    marginHorizontal: 80,
     borderRadius: 35,
     paddingVertical: 15,
+    width: "90%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 10,
-    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
     elevation: 5,
+  },
+  animatedBackground: {
+    position: "absolute",
+    backgroundColor: "#252525",
+    borderRadius: 30,
+    height: 60,
+    left: 5,
   },
 });
