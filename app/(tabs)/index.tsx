@@ -177,6 +177,10 @@ export default function Home() {
     }
   };
 
+  const handleToQRsInfo = async (id: string, name: string, date: string) => {
+    router.push(`/qrsInfo/${id}?name=${name}&date=${date}`);
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -206,6 +210,7 @@ export default function Home() {
         ListFooterComponent={<View style={styles.footerSpace} />}
         renderItem={({ item }) => (
           <SessionCard
+            handleToQRsInfo={handleToQRsInfo}
             session={item}
             qrCodes={qrCodes[item.id] || []}
             handleShare={handleShare}
@@ -215,12 +220,8 @@ export default function Home() {
             handleEditSessionName={handleEditSessionName}
           />
         )}
-        />
-        {
-          loading && (
-            <LoadingScreen/>
-          )
-        }
+      />
+      {loading && <LoadingScreen />}
     </KeyboardAvoidingView>
   );
 }

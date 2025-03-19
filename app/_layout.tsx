@@ -49,6 +49,21 @@ export default function RootLayout() {
                     headerShown: false,
                   }}
                 />
+
+                <Stack.Screen
+                  name="qrsInfo/[id]/index"
+                  options={{
+                    headerShown: true,
+                    headerShadowVisible: false,
+                    headerTitleStyle: {
+                      color: colorScheme === "dark" ? "white" : "black",
+                    },
+                    headerStyle: {
+                      backgroundColor:
+                        colorScheme === "dark" ? "black" : "white",
+                    },
+                  }}
+                />
               </Stack>
             </ActionSheetProvider>
           </PermissionsCheckerProvider>

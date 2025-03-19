@@ -16,11 +16,12 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 interface SessionCardProps {
   session: Session;
   qrCodes: QrCode[];
+  isEditing: boolean;
   handleShare: (session: Session) => void;
   handleSeeMore: (session: Session) => void;
-  isEditing: boolean;
   setEditingSessionId: (id: string | null) => void;
   handleEditSessionName: (id: string, name: string) => void;
+  handleToQRsInfo: (id: string, name: string, date: string) => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -43,9 +44,10 @@ const formatDate = (dateString: string) => {
 export const SessionCard: React.FC<SessionCardProps> = ({
   session,
   qrCodes,
+  isEditing,
   handleShare,
   handleSeeMore,
-  isEditing,
+  handleToQRsInfo,
   setEditingSessionId,
   handleEditSessionName,
 }) => {
@@ -127,10 +129,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {qrCodes && qrCodes.length > 0 ? (
         qrCodes.map((qr) => (
-          <View key={qr.id} style={styles.qrItem}>
-            <Ionicons name="qr-code-outline" size={24} color={textColor} />
-            <Text style={[styles.qrText, { color: textColor }]}>{qr.text}</Text>
-          </View>
+          <Pressable key={qr.id} onPress={() => handleToQRsInfo(qr.session_id, session.name, session.created_at)}>
+            <View style={styles.qrItem}>
+              <Ionicons name="qr-code-outline" size={24} color={textColor} />
+              <Text style={[styles.qrText, { color: textColor }]}>
+                {qr.text}
+              </Text>
+            </View>
+          </Pressable>
+          // <View key={qr.id} style={styles.qrItem}>
+          //   <Ionicons name="qr-code-outline" size={24} color={textColor} />
+          //   <Text style={[styles.qrText, { color: textColor }]}>{qr.text}</Text>
+          // </View>
         ))
       ) : (
         <Text style={[styles.noQrText, { color: textColor }]}>
@@ -189,6 +199,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   qrItem: {
+    width: "90%",
     flexDirection: "row",
     alignItems: "center",
     marginTop: 8,
